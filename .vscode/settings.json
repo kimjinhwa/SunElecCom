@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "memory": "cpp",
+        "random": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp"
+    },
+    "cmake.sourceDirectory": "C:/Users/ServerManager/OneDrive/문서/PlatformIO/Projects/Esp32SNMP_Modbus/.pio/libdeps/SNMP-DEBUG/ArduinoJson"
+}
