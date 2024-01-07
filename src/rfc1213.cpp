@@ -10,12 +10,14 @@
 #include "ModbusBridgeWiFi.h"
 #include "ModbusClientRTU.h"
 #include "upstype.h"
+#include "naradav13.h"
 // extern SNMPAgent snmp;
 //************************************
 //* Initialise                       *
 //************************************
 //  Global Variables
 ups_modbus_data_t ups_modbus_data;
+batteryInofo_t batInfo[8];
 
 static const unsigned long SENSOR_UPDATE_INTERVAL = 5000; // ms = 5 Seconds
 //************************************
@@ -23,6 +25,7 @@ SNMPAgent snmp = SNMPAgent(rocommunity, rwcommunity); // Creates an SMMPAgent in
 const char *savedValuesFile = "/spiffs/snmp.json";
 
 static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
+static const unsigned long UPTIME_UPDATE_INTERVAL10S = 10000; // ms = 1 second
 // static unsigned long lastUptimeUpdateTime = 0;
 LED_BLINK LED_STATUS;
 void setLedStatus(LED_BLINK status)
@@ -51,10 +54,13 @@ void snmpLoop(int job)
             saveSNMPValues(); // Store the values
             snmp.resetSetOccurred();
         }
-        if (millis() - now >= UPTIME_UPDATE_INTERVAL)
+        if (millis() - now >= UPTIME_UPDATE_INTERVAL10S)
         {
             now = millis();
             sysUptime = getUptime();
+            //batInfo
+            for(int i=0;i<8;i++)
+            naradaClient232.copyBatInfoData(i,&batInfo[i]);
         }
         vTaskDelay(5);
     }
@@ -115,70 +121,177 @@ void addENTITYMIBHandler()
     snmp.addReadOnlyStaticStringHandler(oidentPhysicalMfgDate_1, entPhysicalMfgDate_1);
     snmp.addReadOnlyStaticStringHandler(oidentPhysicalUris_1, entPhysicalUris_1);
     // snmp.addReadOnlyStaticStringHandler(oidRfc1213_endof1361, entPhysicalUris_1);
+};
+char *makeOidString(char *desc,const char *src,int startPos,int value){
+    std::string retString(src);
+    std::string sub1 =  retString.substr(0,startPos);
+    std::string sub2 =  retString.substr(startPos+1,retString.length());
+    std::string sValue =  std::to_string(value);
+    sub1 += sValue; 
+    sub1 += sub2;
+    strncpy(desc,sub1.c_str(),sub1.length());
+    return desc;
 }
-
 void addENTITYIFTUPSHandler()
 {
-    snmp.addIntegerHandler(oidIFTYear_made, (int *)&ups_modbus_data.Year_made);
-    snmp.addIntegerHandler(oidIFTMonth_made, (int *)&ups_modbus_data.Month_made);
-    snmp.addIntegerHandler(oidIFTDate_made, (int *)&ups_modbus_data.Date_made);
-    snmp.addIntegerHandler(oidIFTUps_Capacity, (int *)&ups_modbus_data.Ups_Capacity, true);
-    snmp.addIntegerHandler(oidIFTInput_Phase, (int *)&ups_modbus_data.Input_Phase);
-    snmp.addIntegerHandler(oidIFTInput_Voltage, (int *)&ups_modbus_data.Input_Voltage);
-    snmp.addIntegerHandler(oidIFTOutput_Phase, (int *)&ups_modbus_data.Output_Phase);
-    snmp.addIntegerHandler(oidIFTOutput_Voltage, (int *)&ups_modbus_data.Output_Voltage);
-    snmp.addIntegerHandler(oidIFTCompany_code_And_upstype, (int *)&ups_modbus_data.Company_code_And_upstype);
-    snmp.addIntegerHandler(oidIFTInstalled_Battery_Cells, (int *)&ups_modbus_data.Installed_Battery_Cells, true);
-    snmp.addIntegerHandler(oidIFTreserved_2, (int *)&ups_modbus_data.reserved_2);
-    snmp.addIntegerHandler(oidIFTBMS_1_2_STATE, (int *)&ups_modbus_data.BMS_1_2_STATE);
-    snmp.addIntegerHandler(oidIFTConverter_State, (int *)&ups_modbus_data.Converter_State);
-    snmp.addIntegerHandler(oidIFTInverter_State, (int *)&ups_modbus_data.Inverter_State);
-    snmp.addIntegerHandler(oidIFTConverter_Operation_Fault, (int *)&ups_modbus_data.Inverter_Operation_Fault);
-    snmp.addIntegerHandler(oidIFTInverter_Operation_Fault, (int *)&ups_modbus_data.Inverter_Operation_Fault);
-    snmp.addIntegerHandler(oidIFTInput_r_volt_rms, (int *)&ups_modbus_data.Input_r_volt_rms);
-    snmp.addIntegerHandler(oidIFTInput_s_volt_rms, (int *)&ups_modbus_data.Input_s_volt_rms);
-    snmp.addIntegerHandler(oidIFTInput_t_volt_rms, (int *)&ups_modbus_data.Input_t_volt_rms);
-    snmp.addIntegerHandler(oidIFTInput_r_current_rms, (int *)&ups_modbus_data.Input_r_current_rms);
-    snmp.addIntegerHandler(oidIFTInput_s_current_rms, (int *)&ups_modbus_data.Input_s_current_rms);
-    snmp.addIntegerHandler(oidIFTInput_t_current_rms, (int *)&ups_modbus_data.Input_t_current_rms);
-    snmp.addIntegerHandler(oidIFTInput_frequency, (int *)&ups_modbus_data.Input_frequency);
-    snmp.addIntegerHandler(oidIFTBypass_r_volt_rms, (int *)&ups_modbus_data.Bypass_r_volt_rms);
-    snmp.addIntegerHandler(oidIFTBypass_s_volt_rms, (int *)&ups_modbus_data.Bypass_s_volt_rms);
-    snmp.addIntegerHandler(oidIFTBypass_t_volt_rms, (int *)&ups_modbus_data.Bypass_t_volt_rms);
-    snmp.addIntegerHandler(oidIFTBypass_r_current_rms, (int *)&ups_modbus_data.Bypass_r_current_rms);
-    snmp.addIntegerHandler(oidIFTBypass_s_current_rms, (int *)&ups_modbus_data.Bypass_s_current_rms);
-    snmp.addIntegerHandler(oidIFTBypass_t_current_rms, (int *)&ups_modbus_data.Bypass_t_current_rms);
-    snmp.addIntegerHandler(oidIFTBypass_Frequency, (int *)&ups_modbus_data.Bypass_Frequency);
-    snmp.addIntegerHandler(oidIFTInverter_u_volt_rms, (int *)&ups_modbus_data.Inverter_u_volt_rms);
-    snmp.addIntegerHandler(oidIFTInverter_v_volt_rms, (int *)&ups_modbus_data.Inverter_v_volt_rms);
-    snmp.addIntegerHandler(oidIFTInverter_w_volt_rms, (int *)&ups_modbus_data.Inverter_w_volt_rms);
-    snmp.addIntegerHandler(oidIFTInverter_U_curr_rms, (int *)&ups_modbus_data.Inverter_U_curr_rms);
-    snmp.addIntegerHandler(oidIFTInverter_V_curr_rms, (int *)&ups_modbus_data.Inverter_V_curr_rms);
-    snmp.addIntegerHandler(oidIFTInverter_W_curr_rms, (int *)&ups_modbus_data.Inverter_W_curr_rms);
-    snmp.addIntegerHandler(oidIFTInverter_Frequency, (int *)&ups_modbus_data.Inverter_Frequency);
-    snmp.addIntegerHandler(oidIFTBat_volt_rms, (int *)&ups_modbus_data.Bat_volt_rms);
-    snmp.addIntegerHandler(oidIFTBat_current_rms, (int *)&ups_modbus_data.Bat_current_rms);
-    snmp.addIntegerHandler(oidIFTInput_kva_address_KVA, (int *)&ups_modbus_data.Input_kva_address_KVA);
-    snmp.addIntegerHandler(oidIFTInput_kw_KW, (int *)&ups_modbus_data.Input_kw_KW);
-    snmp.addIntegerHandler(oidIFTInput_kvar_KVAR, (int *)&ups_modbus_data.Input_kvar_KVAR);
-    snmp.addIntegerHandler(oidIFTInput_power_factor_Pf, (int *)&ups_modbus_data.Input_power_factor_Pf);
-    snmp.addIntegerHandler(oidIFTOutput_r_volt_rms, (int *)&ups_modbus_data.Output_r_volt_rms);
-    snmp.addIntegerHandler(oidIFTOutput_s_volt_rms, (int *)&ups_modbus_data.Output_s_volt_rms);
-    snmp.addIntegerHandler(oidIFTOutput_t_volt_rms, (int *)&ups_modbus_data.Output_t_volt_rms);
-    snmp.addIntegerHandler(oidIFTOutput_u_current_rms, (int *)&ups_modbus_data.Output_u_current_rms);
-    snmp.addIntegerHandler(oidIFTOutput_v_current_rms, (int *)&ups_modbus_data.Output_v_current_rms);
-    snmp.addIntegerHandler(oidIFTOutput_w_current_rms, (int *)&ups_modbus_data.Output_w_current_rms);
-    snmp.addIntegerHandler(oidIFTOutput_frequency, (int *)&ups_modbus_data.Output_frequency);
-    snmp.addIntegerHandler(oidIFTOutput_kva_KVA, (int *)&ups_modbus_data.Output_kva_KVA);
-    snmp.addIntegerHandler(oidIFTOutput_kw_KW, (int *)&ups_modbus_data.Output_kw_KW);
-    snmp.addIntegerHandler(oidIFTOutput_kvar_KVAR, (int *)&ups_modbus_data.Output_kvar_KVAR);
-    snmp.addIntegerHandler(oidIFTOutput_Power_factor_Pf, (int *)&ups_modbus_data.Output_Power_factor_Pf);
-    snmp.addIntegerHandler(oidIFTOutput_R_Load, (int *)&ups_modbus_data.Output_R_Load);
-    snmp.addIntegerHandler(oidIFTOutput_S_Load, (int *)&ups_modbus_data.Output_S_Load);
-    snmp.addIntegerHandler(oidIFTOutput_T_Load, (int *)&ups_modbus_data.Output_T_Load);
-    snmp.addIntegerHandler(oidIFTBMS_Bat_Voltage, (int *)&ups_modbus_data.BMS_Bat_Voltage);
-    snmp.addIntegerHandler(oidIFTBattery_Room_Temper, (int *)&ups_modbus_data.Battery_Room_Temper);
-    snmp.addIntegerHandler(oidIFTreserved_3_batteryTimeRemain, (int *)&ups_modbus_data.reserved_3_batteryTimeRemain);
+    int batNumber = 15;
+    //naradaClient232.
+    // ~
+    // 1.3.6.1.2.1.32.1.1.15.0
+    char oidData[255];
+    char oidData_2[255];
+    memset(oidData,0x00,255);
+    memset(oidData_2,0x00,255);
+
+    //전압을 할당한다. 
+    for(int i=1;i<=8;i++){
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.1.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].voltageNumber);
+    }
+    //8개의 팩에 15개의 각각의 전압을 할당한다.
+    for(int i=1;i<=8;i++){
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.1.1.0",15,i);
+        memcpy(oidData_2,oidData,255);
+        //std::cout <<  std::endl;
+        for(int j=1;j<=15;j++){
+            makeOidString(oidData_2,oidData,19,j);
+            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].voltage[j]);
+            //std::cout << "   \t" << oidData_2 << std::endl;
+        }
+    }
+    for(int i=1;i<=8;i++){  // 전류를 할당한다
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.2.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].ampere);
+    }
+    for(int i=1;i<=8;i++){  // SOC를 할당한다
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.3.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
+    }
+    for(int i=1;i<=8;i++){  // 용량테이타를 할당한다
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.4.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
+    }
+    int temperatureNumber = 4;
+    for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.5.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].TempreatureNumber);
+    }
+    for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.5.1.0",15,i);
+        memcpy(oidData_2,oidData,255);
+        for(int j=1;j<=4;j++){
+            makeOidString(oidData_2,oidData,19,j);
+            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].Tempreature[j]);
+            //std::cout << "   \t" << oidData_2 << std::endl;
+        }
+    }
+    int16_t packStatusCount=0;
+    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.6.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&packStatusCount);
+    }
+    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.6.1.0",15,i);
+        memcpy(oidData_2,oidData,255);
+        for(int j=1;j<=5;j++){
+            makeOidString(oidData_2,oidData,19,j);
+            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].packStatus[j]);
+            //std::cout << "   \t" << oidData_2 << std::endl;
+        }
+    }
+    int16_t packPeriodCount=0;
+    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.7.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&packPeriodCount);
+    }
+    
+    for(int i=1;i<=8;i++){  // Total Voltage
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.8.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].totalVoltage);
+    }
+    for(int i=1;i<=8;i++){  // Total Voltage
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.9.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].SOH);
+    }
+    for(int i=1;i<=8;i++){  // Total Voltage
+        makeOidString(oidData,"1.3.6.1.2.1.32.1.10.0",15,i);
+        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].BMS_PROTECT_STATUS);
+    }
+
+//    snmp.addIntegerHandler(oidIFTBatVoltage_1, (int *)&ups_modbus_data.Year_made);
+// 1.3.6.1.2.1.32.1.2.0  전류
+// 1.3.6.1.2.1.32.1.3.0  SOC
+// 1.3.6.1.2.1.32.1.4.0  용량
+// 1.3.6.1.2.1.32.1.5.0 온도개수
+// 1.3.6.1.2.1.32.1.5.1.0 ~ 온도
+// 1.3.6.1.2.1.32.1.5.4.0
+// 1.3.6.1.2.1.32.1.6.1.0  배터리팩상태
+// ~
+// 1.3.6.1.2.1.32.1.6.10.0  
+// 1.3.6.1.2.1.32.1.8.1.0  전체전압
+// 1.3.6.1.2.1.32.1.8.1.0  SOH
+// 1.3.6.1.2.1.32.1.10.1.0 보호상태
+
+    ///snmp.addIntegerHandler(oidIFTYear_made, (int *)&ups_modbus_data.Year_made);
+    // snmp.addIntegerHandler(oidIFTMonth_made, (int *)&ups_modbus_data.Month_made);
+    // snmp.addIntegerHandler(oidIFTDate_made, (int *)&ups_modbus_data.Date_made);
+    // snmp.addIntegerHandler(oidIFTUps_Capacity, (int *)&ups_modbus_data.Ups_Capacity, true);
+    // snmp.addIntegerHandler(oidIFTInput_Phase, (int *)&ups_modbus_data.Input_Phase);
+    // snmp.addIntegerHandler(oidIFTInput_Voltage, (int *)&ups_modbus_data.Input_Voltage);
+    // snmp.addIntegerHandler(oidIFTOutput_Phase, (int *)&ups_modbus_data.Output_Phase);
+    // snmp.addIntegerHandler(oidIFTOutput_Voltage, (int *)&ups_modbus_data.Output_Voltage);
+    // snmp.addIntegerHandler(oidIFTCompany_code_And_upstype, (int *)&ups_modbus_data.Company_code_And_upstype);
+    // snmp.addIntegerHandler(oidIFTInstalled_Battery_Cells, (int *)&ups_modbus_data.Installed_Battery_Cells, true);
+    // snmp.addIntegerHandler(oidIFTreserved_2, (int *)&ups_modbus_data.reserved_2);
+    // snmp.addIntegerHandler(oidIFTBMS_1_2_STATE, (int *)&ups_modbus_data.BMS_1_2_STATE);
+    // snmp.addIntegerHandler(oidIFTConverter_State, (int *)&ups_modbus_data.Converter_State);
+    // snmp.addIntegerHandler(oidIFTInverter_State, (int *)&ups_modbus_data.Inverter_State);
+    // snmp.addIntegerHandler(oidIFTConverter_Operation_Fault, (int *)&ups_modbus_data.Inverter_Operation_Fault);
+    // snmp.addIntegerHandler(oidIFTInverter_Operation_Fault, (int *)&ups_modbus_data.Inverter_Operation_Fault);
+    // snmp.addIntegerHandler(oidIFTInput_r_volt_rms, (int *)&ups_modbus_data.Input_r_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInput_s_volt_rms, (int *)&ups_modbus_data.Input_s_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInput_t_volt_rms, (int *)&ups_modbus_data.Input_t_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInput_r_current_rms, (int *)&ups_modbus_data.Input_r_current_rms);
+    // snmp.addIntegerHandler(oidIFTInput_s_current_rms, (int *)&ups_modbus_data.Input_s_current_rms);
+    // snmp.addIntegerHandler(oidIFTInput_t_current_rms, (int *)&ups_modbus_data.Input_t_current_rms);
+    // snmp.addIntegerHandler(oidIFTInput_frequency, (int *)&ups_modbus_data.Input_frequency);
+    // snmp.addIntegerHandler(oidIFTBypass_r_volt_rms, (int *)&ups_modbus_data.Bypass_r_volt_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_s_volt_rms, (int *)&ups_modbus_data.Bypass_s_volt_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_t_volt_rms, (int *)&ups_modbus_data.Bypass_t_volt_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_r_current_rms, (int *)&ups_modbus_data.Bypass_r_current_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_s_current_rms, (int *)&ups_modbus_data.Bypass_s_current_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_t_current_rms, (int *)&ups_modbus_data.Bypass_t_current_rms);
+    // snmp.addIntegerHandler(oidIFTBypass_Frequency, (int *)&ups_modbus_data.Bypass_Frequency);
+    // snmp.addIntegerHandler(oidIFTInverter_u_volt_rms, (int *)&ups_modbus_data.Inverter_u_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_v_volt_rms, (int *)&ups_modbus_data.Inverter_v_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_w_volt_rms, (int *)&ups_modbus_data.Inverter_w_volt_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_U_curr_rms, (int *)&ups_modbus_data.Inverter_U_curr_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_V_curr_rms, (int *)&ups_modbus_data.Inverter_V_curr_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_W_curr_rms, (int *)&ups_modbus_data.Inverter_W_curr_rms);
+    // snmp.addIntegerHandler(oidIFTInverter_Frequency, (int *)&ups_modbus_data.Inverter_Frequency);
+    // snmp.addIntegerHandler(oidIFTBat_volt_rms, (int *)&ups_modbus_data.Bat_volt_rms);
+    // snmp.addIntegerHandler(oidIFTBat_current_rms, (int *)&ups_modbus_data.Bat_current_rms);
+    // snmp.addIntegerHandler(oidIFTInput_kva_address_KVA, (int *)&ups_modbus_data.Input_kva_address_KVA);
+    // snmp.addIntegerHandler(oidIFTInput_kw_KW, (int *)&ups_modbus_data.Input_kw_KW);
+    // snmp.addIntegerHandler(oidIFTInput_kvar_KVAR, (int *)&ups_modbus_data.Input_kvar_KVAR);
+    // snmp.addIntegerHandler(oidIFTInput_power_factor_Pf, (int *)&ups_modbus_data.Input_power_factor_Pf);
+    // snmp.addIntegerHandler(oidIFTOutput_r_volt_rms, (int *)&ups_modbus_data.Output_r_volt_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_s_volt_rms, (int *)&ups_modbus_data.Output_s_volt_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_t_volt_rms, (int *)&ups_modbus_data.Output_t_volt_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_u_current_rms, (int *)&ups_modbus_data.Output_u_current_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_v_current_rms, (int *)&ups_modbus_data.Output_v_current_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_w_current_rms, (int *)&ups_modbus_data.Output_w_current_rms);
+    // snmp.addIntegerHandler(oidIFTOutput_frequency, (int *)&ups_modbus_data.Output_frequency);
+    // snmp.addIntegerHandler(oidIFTOutput_kva_KVA, (int *)&ups_modbus_data.Output_kva_KVA);
+    // snmp.addIntegerHandler(oidIFTOutput_kw_KW, (int *)&ups_modbus_data.Output_kw_KW);
+    // snmp.addIntegerHandler(oidIFTOutput_kvar_KVAR, (int *)&ups_modbus_data.Output_kvar_KVAR);
+    // snmp.addIntegerHandler(oidIFTOutput_Power_factor_Pf, (int *)&ups_modbus_data.Output_Power_factor_Pf);
+    // snmp.addIntegerHandler(oidIFTOutput_R_Load, (int *)&ups_modbus_data.Output_R_Load);
+    // snmp.addIntegerHandler(oidIFTOutput_S_Load, (int *)&ups_modbus_data.Output_S_Load);
+    // snmp.addIntegerHandler(oidIFTOutput_T_Load, (int *)&ups_modbus_data.Output_T_Load);
+    // snmp.addIntegerHandler(oidIFTBMS_Bat_Voltage, (int *)&ups_modbus_data.BMS_Bat_Voltage);
+    // snmp.addIntegerHandler(oidIFTBattery_Room_Temper, (int *)&ups_modbus_data.Battery_Room_Temper);
+    // snmp.addIntegerHandler(oidIFTreserved_3_batteryTimeRemain, (int *)&ups_modbus_data.reserved_3_batteryTimeRemain);
 }
 void addENTITYKEPHandler()
 {

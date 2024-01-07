@@ -49,9 +49,10 @@ void NaradaClient232::makeInt(uint16_t *dest,const uint8_t *src,byte len){
     for(int i=0;i<len;i++)dest[i]= src[i*2]<<8 | src[i*2+1];    
 }
 
-void NaradaClient232::copyBatInfoData(void* dest, void* src){
+/* 팩정보를 복사해 준다*/
+void NaradaClient232::copyBatInfoData(int packNumber, void* dest){
     xSemaphoreTake(revDataMutex, portMAX_DELAY);
-    memcpy(dest,src,sizeof(batteryInofo_t));
+    memcpy(dest,&batInfo[packNumber],sizeof(batteryInofo_t));
     xSemaphoreGive(revDataMutex);
 }
 int NaradaClient232::dataParse(int packNumber,const uint8_t *revData){
