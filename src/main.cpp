@@ -15,6 +15,7 @@
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 #include <BluetoothSerial.h>
+#include <ModbusServerRTU.h>
 
 // for file system
 #include <esp_spiffs.h>
@@ -26,10 +27,12 @@
 
 #include "../Version.h"
 #include "main.h"
-#include "megatec.h"
 #include "upstype.h"
 #include "modbusRtu.h"
+#include <naradav13.h>
 
+#define LED_1 2
+#define LED_2 3
 // PCA9557PW, 118
 #define ETH_PHY_TYPE ETH_PHY_LAN8720
 //
@@ -50,11 +53,13 @@
 #define WEBSOCKET_PORT 81
 #define TELNET_PORT 23
 
-modbusRtu rtu485;
+#define ADDRESS_485 1
+
+//modbusRtu rtu485_LCD;
+ModbusServerRTU rtu485_LCD(2000);
 int8_t debugFlag = 0;
 BluetoothSerial SerialBT;
 uint8_t setOutputDirection = 0;
-
 bool isBTAuthenticated = false;
 
 struct UserInfo_s
@@ -76,7 +81,7 @@ static char TAG[] = "Main";
 StaticJsonDocument<2000> doc_tx;
 // StaticJsonDocument<2000> doc_rx;
 TaskHandle_t *h_pxSnmp;
-TaskHandle_t *h_pxMegatech;
+TaskHandle_t *h_pxNaradaV13;
 TaskHandle_t *h_pxTelnetTask;
 /* setup function */
 const char *soft_ap_ssid = "CHAGER_";
@@ -90,6 +95,9 @@ ThreeWire myWire(15, 32, OP_LED); // IO, SCLK, CE
 RtcDS1302<ThreeWire> Rtc(myWire);
 WebSocketsServer webSocket = WebSocketsServer(WEBSOCKET_PORT);
 WebServer webServer(WEB_PORT );
+
+esp_spp_cb_t callback = NULL;
+
 // void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 bool saveSNMPValues();
 bool check_useridpass(String userid, String passwd);
@@ -103,7 +111,7 @@ void logfileRead(int32_t iStart, int32_t iEnd);
 void sendBufferDataToSocket(uint8_t num);
 
 void snmpRequest(void *parameter);
-// void megatechRequest(void *parameter);
+
 int telnetLoginUser(String userId);
 int telnetLoginPass(String passwd);
 // void logwrite_event();
@@ -722,214 +730,34 @@ bool check_useridpass(String userid, String passwd)
   return ret;
 }
 
-void common_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String strName[12];
-  String strValue[12];
-  Argument strArg;
-  int ArgCount = cmd.countArgs();
-  if (ArgCount > 12)
-  {
-    doc_tx["Error"] = "Too many Argument(max 11)";
-  }
-  for (int i = 0; i < ArgCount; i++)
-  {
-    Argument strArg = cmd.getArgument("userid");
-    strName[i] = strArg.getName();
-    strValue[i] = strArg.getValue();
-  }
-
-  // doc_tx["userid"] = sUserInfo.userid;
-  // doc_tx["passwd"] = sUserInfo.passwd;
-  return;
-}
-extern megatechUpsInfo_t megatechUpsInfo;
-void I_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = megatechUpsInfo.receiveData;
-  retString += "\r\n";
-  retString += megatechUpsInfo.Company_name;
-  retString += "\r\n";
-  retString += megatechUpsInfo.UPS_Model;
-  retString += "\r\n";
-  retString += megatechUpsInfo.Version;
-  retString += "\r\n";
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
-
-// typedef struct
+// void common_configCallback(cmd *cmdPtr)
 // {
-//     char receiveData[21+1+1];
-//     float RatingVoltage;
-//     int RatingCurrent;
-//     float BatteryVoltage;
-//     float Frequency;
-// } F_status_t;
-extern F_status_t F_status;
-void F_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = F_status.receiveData;
-  retString += "\r\n";
-  retString += F_status.RatingVoltage;
-  retString += "\r\n";
-  retString += F_status.RatingCurrent;
-  retString += "\r\n";
-  retString += F_status.BatteryVoltage;
-  retString += "\r\n";
-  retString += F_status.Frequency;
-  retString += "\r\n";
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
+//   Command cmd(cmdPtr);
+//   doc_tx["command_type"] = cmd.getName(); // + String(chp);
+//   String strName[12];
+//   String strValue[12];
+//   Argument strArg;
+//   int ArgCount = cmd.countArgs();
+//   if (ArgCount > 12)
+//   {
+//     doc_tx["Error"] = "Too many Argument(max 11)";
+//   }
+//   for (int i = 0; i < ArgCount; i++)
+//   {
+//     Argument strArg = cmd.getArgument("userid");
+//     strName[i] = strArg.getName();
+//     strValue[i] = strArg.getValue();
+//   }
 
-extern GF_UpsRatingInfo_t GF_UpsRatingInfo;
-void GF_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = GF_UpsRatingInfo.receiveData;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.Rect_Volt;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.Rectifier_Frequency;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.Bpss_Volt;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.Bypass_Frequency;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.OP_Volt;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.output_Frequency;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.battery_voltage;
-  retString += "\r\n";
-  retString += GF_UpsRatingInfo.Power_Rating;
+//   // doc_tx["userid"] = sUserInfo.userid;
+//   // doc_tx["passwd"] = sUserInfo.passwd;
+//   return;
+// }
 
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
 
-extern Q1_status_t Q1_status;
-void Q1_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = Q1_status.receiveData;
-  retString += "\r\n";
-  retString += Q1_status.inputVoltage;
-  retString += "\r\n";
-  retString += Q1_status.faultVoltage;
-  retString += "\r\n";
-  retString += Q1_status.outputVoltage;
-  retString += "\r\n";
-  retString += Q1_status.outputCurrent;
-  retString += "\r\n";
-  retString += Q1_status.inputFrequency;
-  retString += "\r\n";
-  retString += Q1_status.batteryVoltage;
-  retString += "\r\n";
-  retString += Q1_status.temperature;
-  retString += "\r\n";
-  retString += Q1_status.upsStatus;
-  retString += "\r\n";
 
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
 
-extern G1_realtimedata_t G1_realtimedata;
-void G1_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = G1_realtimedata.receiveData;
-  retString += "\r\n";
-  retString += G1_realtimedata.batteryVoltage;
-  retString += "\r\n";
-  retString += G1_realtimedata.batteryCapacityPercentage;
-  retString += "\r\n";
-  retString += G1_realtimedata.batteryTimeRemaining;
-  retString += "\r\n";
-  retString += G1_realtimedata.batteryCurrent;
-  retString += "\r\n";
-  retString += G1_realtimedata.temperature;
-  retString += "\r\n";
-  retString += G1_realtimedata.inputFrequency;
-  retString += "\r\n";
-  retString += G1_realtimedata.frequencyOfBypass;
-  retString += "\r\n";
-  retString += G1_realtimedata.outputFrequency;
-  retString += "\r\n";
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
 
-extern G2_UpsStatus_t G2_UpsStatus;
-void G2_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = G2_UpsStatus.receiveData;
-  retString += "\r\n";
-  retString += G2_UpsStatus.RectifierStatus;
-  retString += "\r\n";
-  retString += G2_UpsStatus.upsStatus;
-  retString += "\r\n";
-  retString += G2_UpsStatus.InverterFaultCondition;
-  retString += "\r\n";
-
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
-extern G3_3P_realtimeData_t G3_3P_realtimeData;
-void G3_configCallback(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);
-  doc_tx["command_type"] = cmd.getName(); // + String(chp);
-  String retString = G3_3P_realtimeData.receiveData;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.inputVolatege_R;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.inputVolatege_S;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.inputVolatege_T;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.bypassVolatege_R;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.bypassVolatege_S;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.bypassVolatege_T;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.outputVolatege_R;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.outputVolatege_S;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.outputVolatege_T;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.lordPercentage_R;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.lordPercentage_S;
-  retString += "\r\n";
-  retString += G3_3P_realtimeData.lordPercentage_T;
-  retString += "\r\n";
-
-  selectPrintf(0, retString.c_str());
-  doc_tx["response"] = retString;
-  return;
-}
 
 void user_configCallback(cmd *cmdPtr)
 {
@@ -1064,7 +892,7 @@ int log_printf_telnet(const char *fmt, ...)
   char *buffer = (char *)malloc(length);
   if (buffer == NULL)
   {
-    Serial.println("Error: Failed to allocate memory for buffer");
+    USE_SERIAL.println("Error: Failed to allocate memory for buffer");
     va_end(args); // Clean up the variable arguments
     return 0;
   }
@@ -1403,7 +1231,7 @@ void ip_configCallback(cmd *cmdPtr)
     if (baudrate == 1200 || baudrate == 2400 || baudrate == 4800 || baudrate == 9600 || baudrate == 57600 || baudrate == 115200)
     {
       ipAddress_struct.BAUDRATE = baudrate;
-      Serial.begin(baudrate);
+      USE_SERIAL.begin(baudrate);
     }
     if_modified = true;
   }
@@ -1503,7 +1331,7 @@ void df_configCallback(cmd *cmdPtr)
   selectPrintf(0, "|Free Psrm|       |          |   %d | ESP.FreePsram   |\r\n", ESP.getFreePsram());
   selectPrintf(0, "|UsedPsram|       |          |   %d | Psram - FreeRam |\r\n", ESP.getPsramSize() - ESP.getFreePsram());
   selectPrintf(0, "|SNMP Threed heap free     |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxSnmp));
-  selectPrintf(0, "|megatech Threed heap free |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxMegatech));
+  selectPrintf(0, "|h_pxNaradaV13 Threed heap free |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxNaradaV13));
   selectPrintf(0, "|Telnet Threed heap free     |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxTelnetTask));
 }
 
@@ -1524,13 +1352,6 @@ void errorCallback(cmd_error *errorPtr)
 }
 void SimpleCLISetUp()
 {
-  cmd_ls_config = cli.addCommand("I", I_configCallback);
-  cmd_ls_config = cli.addCommand("F", F_configCallback);
-  cmd_ls_config = cli.addCommand("GF", GF_configCallback);
-  cmd_ls_config = cli.addCommand("Q1", Q1_configCallback);
-  cmd_ls_config = cli.addCommand("G1", G1_configCallback);
-  cmd_ls_config = cli.addCommand("G2", G2_configCallback);
-  cmd_ls_config = cli.addCommand("G3", G3_configCallback);
   cmd_ls_config = cli.addCommand("ls", ls_configCallback);
   cmd_ls_config = cli.addCommand("user", user_configCallback);
   cmd_ls_config.addArgument("u/serid", "");
@@ -1640,11 +1461,9 @@ void setIpaddressToEthernet()
 }
 int EthLan8720Start()
 {
-  // WiFi.onEvent(WiFiEvent);
   pinMode(ETH_POWER_PIN, OUTPUT);
   ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLOCK_GPIO0_IN /*ETH_CLK_MODE*/);
   int retrycount = 0;
-  // digitalWrite(ETH_POWER_PIN,LOW);
 
   if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
     printf("Eth config failed...\r\n");
@@ -1866,7 +1685,7 @@ void readInputFromTelnetClient()
 }
 FILE *fUpdate;
 int UpdateSize;
-void serverOnset()
+void httpServerOnset()
 {
   webServer.on("/style.css", HTTP_GET, []()
                { readFileToWeb("text/css", "/spiffs/style.css"); });
@@ -1952,7 +1771,7 @@ void serverOnset()
           printf("Update: %s\r\n", upload.filename.c_str());
           if (!Update.begin(UPDATE_SIZE_UNKNOWN))
           { // start with max available size
-            Update.printError(Serial);
+            Update.printError(USE_SERIAL);
           }
         }
         else if (upload.status == UPLOAD_FILE_WRITE)
@@ -1960,7 +1779,7 @@ void serverOnset()
           /* flashing firmware to ESP*/
           if (Update.write(upload.buf, upload.currentSize) != upload.currentSize)
           {
-            Update.printError(Serial);
+            Update.printError(USE_SERIAL);
             webServer.send(200, "text/plain", "Update.write FAIL");
           }
         }
@@ -1973,7 +1792,7 @@ void serverOnset()
           }
           else
           {
-            Update.printError(Serial);
+            Update.printError(USE_SERIAL);
             webServer.send(200, "text/plain", "Update FAIL");
           }
         }
@@ -2178,11 +1997,7 @@ void readnWriteEEProm()
     ipAddress_struct.NTP_1 = (uint32_t)IPAddress(203, 248, 240, 140); //(203, 248, 240, 140);
     ipAddress_struct.NTP_2 = (uint32_t)IPAddress(13, 209, 84, 50);
     ipAddress_struct.ntpuse = false;
-#ifdef S115200
-    ipAddress_struct.BAUDRATE = 115200;
-#else
-    ipAddress_struct.BAUDRATE = 2400;
-#endif
+    ipAddress_struct.BAUDRATE = 9600;
     ipAddress_struct.Q_INTERVAL = 1000;
 
     EEPROM.writeBytes(1, (const byte *)&ipAddress_struct, sizeof(nvsSystemSet));
@@ -2199,11 +2014,7 @@ void readnWriteEEProm()
   }
   if (ipAddress_struct.BAUDRATE < 2400 || ipAddress_struct.BAUDRATE > 115200)
   {
-#ifdef S115200
     ipAddress_struct.BAUDRATE = 115200;
-#else
-    ipAddress_struct.BAUDRATE = 2400;
-#endif
     EEPROM.writeBytes(1, (const byte *)&ipAddress_struct, sizeof(nvsSystemSet));
     EEPROM.commit();
     EEPROM.readBytes(1, (byte *)&ipAddress_struct, sizeof(nvsSystemSet));
@@ -2412,33 +2223,30 @@ void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
   if (event == ESP_SPP_SRV_OPEN_EVT)
   {
-    Serial.println("Bluetooth device connected!");
+    USE_SERIAL.println("Bluetooth device connected!");
     SerialBT.println("Please Input passwd: ");
   }
 }
-esp_spp_cb_t callback = NULL;
-#define LED_1 2
-#define LED_2 3
+
 void setup()
 {
-  int isEthernetConnect = false;
   pinMode(OP_LED, OUTPUT);
-  rtu485.modbusInit();
+  EEPROM.begin(100);
   readnWriteEEProm();
-#ifdef S115200
-  Serial.begin(115200);
-#elif S2400
-  Serial.begin(2400);
-#else
-  Serial.begin(ipAddress_struct.BAUDRATE);
-#endif
+  Serial.begin(BAUDRATEDEF);
+
+  rtu485_LCD.begin(Serial2);
+  rtu485_LCD.registerWorker(ADDRESS_485,READ_HOLD_REGISTER,&FC03);
+  rtu485_LCD.registerWorker(ADDRESS_485,READ_INPUT_REGISTER,&FC03);
+  
+
   String macAddress = WiFi.macAddress();
+
   macAddress.replace(":", "");
   SerialBT.begin("IFTECH_" + macAddress);
   callback = onBTConnect;
   SerialBT.register_callback(&callback);
 
-  EEPROM.begin(100);
   setRtc();
 
   int16_t qSocketSendRequest[5];
@@ -2460,18 +2268,14 @@ void setup()
   if (EthLan8720Start())
   {
     printf("\r\nWiFi.softAPConfig");
-    //WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
     printf("\r\nWiFi.mode(WIFI_MODE_AP)");
-    //WiFi.mode(WIFI_MODE_AP);
-    //macAddress = String(soft_ap_ssid) + macAddress;
     printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
-    //WiFi.softAP(macAddress.c_str(), soft_ap_password);
   }
   else
   {
     printf("\r\nEthernet connection succeed");
   }
-  serverOnset();
+  httpServerOnset();
   printf("\r\nWebServer Begin");
   webServer.begin();
   setIpaddressToEthernet();
@@ -2480,7 +2284,7 @@ void setup()
   webSocket.onEvent(webSocketEvent);
 
   xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
-  xTaskCreate(megatechRequest, "megatech", 10240, NULL, 1, h_pxMegatech);
+  xTaskCreate(h_pxNaradaV13Request, "h_pxNaradaV13", 10240, NULL, 1, h_pxNaradaV13);
   xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
 //   // 7168 8192 10240
   cli.parse("user");
@@ -2489,16 +2293,16 @@ void setup()
 //   // esp_log_set_vprintf(telnet_write);
 }
 
-int interval = 1000;
-unsigned long previousmills = 0;
-int everySecondInterval = 1000;
-unsigned long now;
+static int interval = 1000;
+static unsigned long previousmills = 0;
+static int everySecondInterval = 1000;
+static unsigned long now;
 
 void loop()
 {
   webServer.handleClient();
   webSocket.loop();
-  if(Serial2.available()) rtu485.receiveData();
+
   if (SerialBT.available()) readInputSerialBT();
   now = millis();
   if ((now - previousmills > everySecondInterval))
@@ -2507,7 +2311,3 @@ void loop()
   }
   vTaskDelay(10);
 }
-
-// C:\Users\STELLA\.platformio\packages\framework-arduinoespressif32@3.20006.221224\tools\sdk\esp32\qio_qspi\include\sdkconfig.h
-// int16_t rRequest[5]
-//

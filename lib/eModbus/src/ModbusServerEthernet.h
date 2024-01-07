@@ -6,15 +6,14 @@
 #define _MODBUS_SERVER_ETHERNET_H
 #include "options.h"
 #if HAS_ETHERNET == 1
-#include <WiFiServer.h>
-#include <WiFiClient.h>
+#include <Ethernet.h>
 #include <SPI.h>
 
 #undef SERVER_END
-#define SERVER_END server.end();
+#define SERVER_END // NIL for Ethernet
 
 #include "ModbusServerTCPtemp.h"
-using ModbusServerEthernet = ModbusServerTCP<WiFiServer , WiFiClient >;
+using ModbusServerEthernet = ModbusServerTCP<EthernetServer, EthernetClient>;
 #endif
 
 #endif

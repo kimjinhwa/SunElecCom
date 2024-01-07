@@ -180,36 +180,30 @@ void addENTITYIFTUPSHandler()
     snmp.addIntegerHandler(oidIFTBattery_Room_Temper, (int *)&ups_modbus_data.Battery_Room_Temper);
     snmp.addIntegerHandler(oidIFTreserved_3_batteryTimeRemain, (int *)&ups_modbus_data.reserved_3_batteryTimeRemain);
 }
-kep_value_st kep_value;
 void addENTITYKEPHandler()
 {
-    snmp.addIntegerHandler(oidKEPinputVoltage_R, &kep_value.inputVoltage_R);
-    snmp.addIntegerHandler(oidKEPinputVoltage_S, &kep_value.inputVoltage_S);
-    snmp.addIntegerHandler(oidKEPinputVoltage_T, &kep_value.inputVoltage_T);
-    snmp.addIntegerHandler(oidKEPoutputVoltage, &kep_value.outputVoltage);
-    snmp.addIntegerHandler(oidKEPoutputCurrent, &kep_value.outputCurrent);
-    snmp.addIntegerHandler(oidKEPbatteryVoltage, &kep_value.batteryVoltage);
-    snmp.addIntegerHandler(oidKEPchargeCurrent, &kep_value.chargeCurrent);
-    // snmp.addIntegerHandler(oidKEPchargeMode, &kep_value.chargeMode);
-    //&kep_value.chargeMode
-    snmp.addReadWriteStringHandler(oidKEPchargeMode, &kepChargeMode, 10, true);
-
-    snmp.addIntegerHandler(oidKEPoutputFrequency, &kep_value.outputFrequency);
-
-    snmp.addIntegerHandler(oidKEPpowerFail, &kep_value.powerFail);
-    snmp.addIntegerHandler(oidKEPpowerFailRecovery, &kep_value.powerFailFailRecovery);
-    snmp.addIntegerHandler(oidKEPinputpowerFail, &kep_value.inputpowerFail);
-    snmp.addIntegerHandler(oidKEPinputpowerFailRecovery, &kep_value.inputpowerFailRecovery);
-
-    snmp.addIntegerHandler(oidKEPmodule1, &kep_value.module1);
-    snmp.addIntegerHandler(oidKEPmodule1Recover, &kep_value.module1Recover);
-    snmp.addIntegerHandler(oidKEPmodule2, &kep_value.module2);
-    snmp.addIntegerHandler(oidKEPmodule2Recover, &kep_value.module2Recover);
-    snmp.addIntegerHandler(oidKEPmodule3, &kep_value.module3);
-    snmp.addIntegerHandler(oidKEPmodule3Recover, &kep_value.module3Recover);
-    snmp.addIntegerHandler(oidKEPmodule4, &kep_value.module4);
-    snmp.addIntegerHandler(oidKEPmodule4Recover, &kep_value.module4Recover);
-    snmp.addIntegerHandler(oidKEPmoduleEND, &kep_value.module4Recover);
+    // snmp.addIntegerHandler(oidKEPinputVoltage_R, &kep_value.inputVoltage_R);
+    // snmp.addIntegerHandler(oidKEPinputVoltage_S, &kep_value.inputVoltage_S);
+    // snmp.addIntegerHandler(oidKEPinputVoltage_T, &kep_value.inputVoltage_T);
+    // snmp.addIntegerHandler(oidKEPoutputVoltage, &kep_value.outputVoltage);
+    // snmp.addIntegerHandler(oidKEPoutputCurrent, &kep_value.outputCurrent);
+    // snmp.addIntegerHandler(oidKEPbatteryVoltage, &kep_value.batteryVoltage);
+    // snmp.addIntegerHandler(oidKEPchargeCurrent, &kep_value.chargeCurrent);
+    // snmp.addReadWriteStringHandler(oidKEPchargeMode, &kepChargeMode, 10, true);
+    // snmp.addIntegerHandler(oidKEPoutputFrequency, &kep_value.outputFrequency);
+    // snmp.addIntegerHandler(oidKEPpowerFail, &kep_value.powerFail);
+    // snmp.addIntegerHandler(oidKEPpowerFailRecovery, &kep_value.powerFailFailRecovery);
+    // snmp.addIntegerHandler(oidKEPinputpowerFail, &kep_value.inputpowerFail);
+    // snmp.addIntegerHandler(oidKEPinputpowerFailRecovery, &kep_value.inputpowerFailRecovery);
+    // snmp.addIntegerHandler(oidKEPmodule1, &kep_value.module1);
+    // snmp.addIntegerHandler(oidKEPmodule1Recover, &kep_value.module1Recover);
+    // snmp.addIntegerHandler(oidKEPmodule2, &kep_value.module2);
+    // snmp.addIntegerHandler(oidKEPmodule2Recover, &kep_value.module2Recover);
+    // snmp.addIntegerHandler(oidKEPmodule3, &kep_value.module3);
+    // snmp.addIntegerHandler(oidKEPmodule3Recover, &kep_value.module3Recover);
+    // snmp.addIntegerHandler(oidKEPmodule4, &kep_value.module4);
+    // snmp.addIntegerHandler(oidKEPmodule4Recover, &kep_value.module4Recover);
+    // snmp.addIntegerHandler(oidKEPmoduleEND, &kep_value.module4Recover);
 }
 void addENTITYSENSORMIBHandler()
 {

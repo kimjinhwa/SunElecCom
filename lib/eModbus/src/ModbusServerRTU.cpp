@@ -143,6 +143,7 @@ void ModbusServerRTU::registerSniffer(MSRlistener worker) {
   LOG_D("Registered sniffer\n");
 }
 
+#define OP_LED 33
 // serve: loop until killed and receive messages from the RTU interface
 void ModbusServerRTU::serve(ModbusServerRTU *myServer) {
   ModbusMessage request;                // received request message
@@ -234,7 +235,9 @@ void ModbusServerRTU::serve(ModbusServerRTU *myServer) {
         // Do we have gathered a valid response now?
         if (response.size() >= 3) {
           // Yes. send it back.
+          digitalWrite(OP_LED, 1);
           RTUutils::send(*(myServer->MSRserial), myServer->MSRlastMicros, myServer->MSRinterval, myServer->MRTSrts, response, myServer->MSRuseASCII);
+          digitalWrite(OP_LED, 0);
           LOG_D("Response sent.\n");
           // Count it, in case we had an error response
           if (response.getError() != SUCCESS) {
