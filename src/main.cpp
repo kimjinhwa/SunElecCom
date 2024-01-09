@@ -127,7 +127,7 @@ int log_printf_telnet(const char *fmt, ...);
 WiFiClient Client;
 WiFiServer telnetServer(TELNET_PORT );
 
-IPAddress ipaddress(192, 168, 0, 200);
+IPAddress ipaddress(192, 168, 0, 201);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnetmask(255, 255, 255, 0);
 IPAddress dns1(164, 124, 101, 2);
@@ -1987,10 +1987,10 @@ void readnWriteEEProm()
   {
     selectPrintf(0, "\n\rInitialize....Ipset memory....to default..");
     EEPROM.writeByte(0, 0x55);
-    ipAddress_struct.IPADDRESS = (uint32_t)IPAddress(192, 168, 0, 200);
-    ipAddress_struct.GATEWAY = (uint32_t)IPAddress(192, 168, 0, 1);
-    ipAddress_struct.SUBNETMASK = (uint32_t)IPAddress(255, 255, 255, 0);
-    ipAddress_struct.WEBSOCKETSERVER = (uint32_t)IPAddress(192, 168, 0, 200);
+    ipAddress_struct.IPADDRESS = ipaddress;
+    ipAddress_struct.GATEWAY = gateway;
+    ipAddress_struct.SUBNETMASK = subnetmask;
+    ipAddress_struct.WEBSOCKETSERVER = ipaddress;
     ipAddress_struct.DNS1 = (uint32_t)IPAddress(8, 8, 8, 8);
     ipAddress_struct.DNS2 = (uint32_t)IPAddress(164, 124, 101, 2);
     ipAddress_struct.WEBSERVERPORT = 81;
@@ -2301,9 +2301,11 @@ void loop() {
   webServer.handleClient();
   webSocket.loop();
   if (SerialBT.available()) readInputSerialBT();
+  //if(Serial.available())SerialBT.print(Serial.read());
   now = millis();
   if ((now - previousmills > everySecondInterval))
   {
+    //Serial.print("IamHere");
     previousmills = now;
   }
   vTaskDelay(10);
