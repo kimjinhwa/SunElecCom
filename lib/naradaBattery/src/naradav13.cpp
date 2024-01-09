@@ -10,11 +10,14 @@
 
 static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
 static unsigned long lastUptimeUpdateTime = 0;
+static int readSerialCount =0;
+static uint8_t revData[255];
+static int ValidData=0;
 
 NaradaClient232::NaradaClient232()
 {
     onData=nullptr;
-    SemaphoreHandle_t revDataMutex;
+    revDataMutex = xSemaphoreCreateMutex();
 //OP_LED 
     
     //onData((NCOnData)nullptr,0);
@@ -55,11 +58,11 @@ void NaradaClient232::makeInt(uint16_t *dest,const uint8_t *src,byte len){
     for(int i=0;i<len;i++)dest[i]= src[i*2]<<8 | src[i*2+1];    
 }
 
+
 /* 팩정보를 복사해 준다*/
 void NaradaClient232::copyBatInfoData(int packNumber, batteryInofo_t* dest){
-    //xSemaphoreTake(revDataMutex, portMAX_DELAY);
-
-    dest->voltageNumber = batInfo[packNumber].voltageNumber = packNumber*1;
+    xSemaphoreTake(revDataMutex, portMAX_DELAY);
+    dest->voltageNumber = batInfo[packNumber].voltageNumber ;
     for(int j=0;j<15;j++)dest->voltage[j]= batInfo[packNumber].voltage[j];
     dest->ampere =  batInfo[packNumber].ampere;
     dest->soc =  batInfo[packNumber].soc;
@@ -71,9 +74,11 @@ void NaradaClient232::copyBatInfoData(int packNumber, batteryInofo_t* dest){
     dest->voltageNumber =  batInfo[packNumber].voltageNumber;
     dest->SOH = batInfo[packNumber].SOH;
     dest->BMS_PROTECT_STATUS =  batInfo[packNumber].BMS_PROTECT_STATUS;
-    //xSemaphoreGive(revDataMutex);
+    xSemaphoreGive(revDataMutex);
 }
-int NaradaClient232::dataParse(int packNumber,const uint8_t *revData){
+int NaradaClient232::dataParse(const uint8_t *revData){
+    int packNumber;
+    packNumber = revData[1];
     revData = revData+4;
     xSemaphoreTake(revDataMutex, portMAX_DELAY);
     for(int i=0 ;i<11;i++){
@@ -134,69 +139,38 @@ int NaradaClient232::dataParseExt(int packNumber,const uint8_t *revData){
     }
     return SUCCESS;
 }
-Error NaradaClient232::readAnswerData(int packNumber){
-    int readCount =0;
-    int loopCount=0;
-    int timeOut = 100;
-    uint8_t revData[255];
-    memset(revData,0x00,255);
-    Serial2.setTimeout(1000);
-    digitalWrite(OP_LED, 0); // Receive mode
-    //처음 데이타를 기다린다.j
-    while(!Serial2.available()){
-        loopCount++;
-        vTaskDelay(10);
-        if(loopCount >= timeOut){
-            return TIMEOUT;
-        } 
-    }
-    int c=0x00;
-    loopCount = 0;
-
-    int start =0;
-    while (Serial2.available())
-    {
-        c = Serial2.read();
-        if (c == 0x7e) start = 1;
-        if (start)
-        {
-            revData[readCount] = c;
-            readCount++;
-            while (!Serial2.available())
-            {
-                loopCount++;
-                vTaskDelay(5);
-                if (loopCount >= 4)
-                {
-                    loopCount = 0;
-                    break;
-                }
-            }
-            if (readCount > 254)
-                break;
-        }
-    };
-    // readCount =  Serial2.readBytes(revData,4);
-    // if(readCount<4) return TIMEOUT;
-    // readCount +=  Serial2.readBytes(&revData[4],revData[3]+2);// 마지막  checksum Flag 0x0D
-    for(int i=0;i<readCount;i++)
-        Serial.printf(" %02x",revData[i]);
-    Serial.printf("\nRead count is %d",readCount);
-
-    while(Serial2.available() ) Serial2.read();
-    
-    return SUCCESS;
-
-    if(readCount < (revData[3]+4) ) return TIMEOUT;
-    //명령어 4개 + data 0x56(86) + checksum + endflag = 92
-    dataParse(packNumber, revData);
+Error NaradaClient232::readAnswerData(){
+    dataParse(revData);
     checksum(revData,4+revData[4]);
     if(revData[4+revData[3]] !=  checksum(revData,4+revData[3]))return CRC_ERROR;
     return SUCCESS;
-} 
+}
+
+void NaradaClient232::makeDataClear(int packNumber)
+{
+    batInfo[packNumber].voltageNumber = 0;
+    for (int j = 0; j < 15; j++)
+        batInfo[packNumber].voltage[j] = 0;
+    batInfo[packNumber].ampere = 0;
+    batInfo[packNumber].soc = 0;
+    batInfo[packNumber].Capacity = 0;
+    batInfo[packNumber].TempreatureNumber = 0;
+    for (int j = 0; j < 4; j++)
+        batInfo[packNumber].Tempreature[j] = 0;
+    for (int j = 0; j < 5; j++)
+        batInfo[packNumber].packStatus[j] = 0;
+    batInfo[packNumber].readCycleCount = 0;
+    batInfo[packNumber].voltageNumber = 0;
+    batInfo[packNumber].SOH = 0;
+    batInfo[packNumber].BMS_PROTECT_STATUS = 0;
+}
 void NaradaClient232::getPackData(int packNumber){
+    readSerialCount =0;
+    memset(revData,0x00,255);
+    makeDataClear(packNumber);// 값을 읽어 오기 전에 팩데이타를 클리어 한다
     byte sendData[7]; memset(sendData,0x00,7);
     byte index=0;
+    while(Serial2.available())Serial2.read();
     //7E 01 01 00 FE 0D`
     sendData[index++] = 0x7E;
     sendData[index++] = packNumber;//x01;
@@ -204,9 +178,6 @@ void NaradaClient232::getPackData(int packNumber){
     sendData[index++] = 00;//x01;
     sendData[index++] =checksum(sendData,index);
     sendData[index++] = 0x0D;//x01;
-    Serial.println();
-    for(int i = 0;i < index ; i++) Serial.printf(" %02x",sendData[i]);
-    Serial.println();
     digitalWrite(OP_LED, 1); // Write mode
     delay(1);
     Serial2.write(sendData,index);
@@ -216,9 +187,25 @@ void NaradaClient232::getPackData(int packNumber){
     //readAnswerData(packNumber);
 };
 
+int readSerial2Data(){
+        if(Serial2.available()){
+            revData[readSerialCount] = Serial2.read();
+            readSerialCount++;
+            if(readSerialCount>4){
+                if((revData[0]= 0x73) && (readSerialCount >= revData[3]+4+2) ) {
+                    //LOG_I("\n-----Data count is %d %d\n",readSerialCount ,revData[3]+4+2);
+                    //Serial.printf("\n-----Data count is %d %d\n",readSerialCount ,revData[3]+4+2);
+                    ValidData = 1; 
+                    return 1;
+                }
+            }
+        };
+        return 0;
+}
 static int interval = 1000;
 static unsigned long previousmills = 0;
-static int everySecondInterval = 2000;
+static int everySecondInterval = 1000;
+static int everyTwoInterval = 2000;
 static unsigned long now;
 void h_pxNaradaV13Request(void *parameter)
 {
@@ -227,16 +214,21 @@ void h_pxNaradaV13Request(void *parameter)
     for (;;)
     {
         now = millis();
-        if(Serial2.available())
-            Serial.printf(" %2x",Serial2.read());
-        if ((now - previousmills > everySecondInterval))
+        ValidData=readSerial2Data();
+        if(ValidData){
+            LOG_I("Read Data count is %d\n",readSerialCount);
+            //for(int i=0;i<readSerialCount;i++) LOG_I(" %02x",revData[i]);
+            naradaClient485.readAnswerData();
+            ValidData=0;
+        }
+        if ((now - previousmills > everyTwoInterval ))
         {
-            //naradaClient485.getPackData(1);
-            //delay(10);
+            ValidData =0;
+            naradaClient485.getPackData(packNumber );
             previousmills = now;
+            delay(10);
             packNumber++;
             if(packNumber >= MAX_PACK_NUMBER) packNumber =0;     
-            //vTaskDelay(3000);
         }
         delay(5);
     }
@@ -264,8 +256,8 @@ void h_pxNaradaV13Request(void *parameter)
 // }
 
     //printf("\nChecksum is %2x , %02x",revData[4+revData[3]],checksum(revData,4+revData[3]));
-    // while(readCount < revData.dataLength-1){
-    //     readCount += dataParse();
+    // while(readSerialCount < revData.dataLength-1){
+    //     readSerialCount += dataParse();
     //}
 
 
@@ -296,3 +288,57 @@ void h_pxNaradaV13Request(void *parameter)
 //    byte dataLength; 
 // }naradav13_headingData_t;
 // naradav13_headingData_t revData;
+    //digitalWrite(OP_LED, 0); // Receive mode
+    //처음 데이타를 기다린다.j
+    // while(!Serial2.available()){
+    //     loopCount++;
+    //     vTaskDelay(10);
+    //     if(loopCount >= timeOut){
+    //         return TIMEOUT;
+    //     } 
+    // }
+    // int c=0x00;
+    // loopCount = 0;
+
+    // int start =0;
+    // while (Serial2.available())
+    // {
+    //     c = Serial2.read();
+    //     if (c == 0x7e) start = 1;
+    //     if (start)
+    //     {
+    //         revData[readSerialCount] = c;
+    //         readSerialCount++;
+    //         while (!Serial2.available())
+    //         {
+    //             loopCount++;
+    //             vTaskDelay(5);
+    //             if (loopCount >= 4)
+    //             {
+    //                 loopCount = 0;
+    //                 break;
+    //             }
+    //         }
+    //         if (readSerialCount > 254)
+    //             break;
+    //     }
+    // };
+    // readSerialCount =  Serial2.readBytes(revData,4);
+    // if(readSerialCount<4) return TIMEOUT;
+    // readSerialCount +=  Serial2.readBytes(&revData[4],revData[3]+2);// 마지막  checksum Flag 0x0D
+    // for(int i=0;i<readSerialCount;i++)
+    //     Serial.printf(" %02x",revData[i]);
+    // Serial.printf("\nRead count is %d",readSerialCount);
+
+    // while(Serial2.available() ) Serial2.read();
+    
+    // return SUCCESS;
+
+    // if(readSerialCount < (revData[3]+4) ) return TIMEOUT;
+    //명령어 4개 + data 0x56(86) + checksum + endflag = 92
+    // Serial.printf("\npacknumber %d\n",packNumber);
+    // for(int j=0;j<15;j++)Serial.printf(" %d", batInfo[packNumber].voltage[j]);
+    // Serial.println();
+    // Serial.println();
+    // for(int i = 0;i < index ; i++) Serial.printf(" %02x",sendData[i]);
+    // Serial.println();

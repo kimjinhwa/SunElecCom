@@ -45,8 +45,9 @@ public:
     bool onDataHandler(NCOnData handler); // Accept onData handler
     void begin();
     void getPackData(int packNumber);
-    Error readAnswerData(int packNumber);
-    int dataParse(int packNumge,const uint8_t *revData);
+    void makeDataClear(int packNumber);
+    Error readAnswerData();
+    int dataParse(const uint8_t *revData);
     int dataParseExt(int packNumber,const uint8_t *revData);
     uint8_t checksum(unsigned char* buf, size_t len) ;
     void makeInt(uint16_t *dest,const uint8_t *src,byte len);

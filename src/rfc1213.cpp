@@ -26,9 +26,11 @@ const char *savedValuesFile = "/spiffs/snmp.json";
 
 static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
 static const unsigned long UPTIME_UPDATE_INTERVAL10S = 10000; // ms = 1 second
+static const unsigned long UPTIME_UPDATE_INTERVAL1S = 1000; // ms = 1 second
+static const unsigned long UPTIME_UPDATE_INTERVAL5S = 5000; // ms = 1 second
 // static unsigned long lastUptimeUpdateTime = 0;
 LED_BLINK LED_STATUS;
-void makeTestData();
+void makeDataClear(int packNumber);
 void setLedStatus(LED_BLINK status)
 {
     LED_STATUS = status;
@@ -46,7 +48,7 @@ void snmpLoop(int job)
     int pos = 0;
     int ledOnOffTime = 1000;
     LED_STATUS = APMODE;
-    makeTestData();
+    makeDataClear(0);
     while (1)
     {
         snmp.loop();
@@ -56,12 +58,13 @@ void snmpLoop(int job)
             saveSNMPValues(); // Store the values
             snmp.resetSetOccurred();
         }
-        if (millis() - now >= UPTIME_UPDATE_INTERVAL10S)
+        if (millis() - now >= UPTIME_UPDATE_INTERVAL5S)
         {
             now = millis();
             sysUptime = getUptime();
             for(int i=0;i<8;i++){
                 naradaClient485.copyBatInfoData(i,&batInfo[i]);
+                delay(100);
             }
         }
         vTaskDelay(5);
@@ -135,35 +138,34 @@ int idIFTBatVoltageR1_15 = 3338;
 
 int alarmNumber = 5;
 
-void makeTestData(){
-    for(int packNumber=0;packNumber<8;packNumber++) 
-        batInfo[packNumber].voltageNumber = packNumber*1;
-    for(int packNumber=0;packNumber<8;packNumber++)
+void makeDataClear(int packNumber){
+    //for(int packNumber=0;packNumber<8;packNumber++) 
+        batInfo[packNumber].voltageNumber = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
         for(int j=0;j<15;j++)
-            batInfo[packNumber].voltage[j] = 20 + j;
-    for(int packNumber=0;packNumber<8;packNumber++)
-       batInfo[packNumber].ampere = 30 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].soc = 40 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].Capacity = 50 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].TempreatureNumber = 60 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
+            batInfo[packNumber].voltage[j] = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+       batInfo[packNumber].ampere = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].soc = 0 ;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].Capacity = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].TempreatureNumber = 0 ;
+    //for(int packNumber=0;packNumber<8;packNumber++)
         for(int j=0;j<4;j++) 
-            batInfo[packNumber].Tempreature[j] = 70+packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
+            batInfo[packNumber].Tempreature[j] = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
         for(int j=0;j<5;j++) 
-            batInfo[packNumber].packStatus[j] = 80 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].readCycleCount = 90 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].voltageNumber = 100 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].SOH = 110 + packNumber;
-    for(int packNumber=0;packNumber<8;packNumber++)
-        batInfo[packNumber].BMS_PROTECT_STATUS = 110 + packNumber;
-
+            batInfo[packNumber].packStatus[j] = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].readCycleCount = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].voltageNumber = 0 ;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].SOH = 0;
+    //for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].BMS_PROTECT_STATUS = 0;
 }
 void addENTITYIFTUPSHandler()
 {
@@ -193,18 +195,18 @@ void addENTITYIFTUPSHandler()
     //SOC 할당 한다. 
     for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatSOC[i], (int *)&batInfo[i].soc);
     //CAPACITY 할당 한다. 
-    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatCapacity[i], (int *)&batInfo[i].soc);
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatCapacity[i], (int *)&batInfo[i].Capacity);
     //셀수를 할당 한다. 
     for(int i=0;i<8;i++) snmp.addIntegerHandler(oidTempNumber[i], (int *)&batInfo[i].TempreatureNumber);
     //각 랙에 온도를 할당한다 
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR1[j], (int *)&batInfo[0].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR2[j], (int *)&batInfo[1].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR3[j], (int *)&batInfo[2].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR4[j], (int *)&batInfo[3].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR5[j], (int *)&batInfo[4].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR6[j], (int *)&batInfo[5].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR7[j], (int *)&batInfo[6].voltage[j]);
-    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR8[j], (int *)&batInfo[7].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR1[j], (int *)&batInfo[0].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR2[j], (int *)&batInfo[1].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR3[j], (int *)&batInfo[2].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR4[j], (int *)&batInfo[3].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR5[j], (int *)&batInfo[4].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR6[j], (int *)&batInfo[5].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR7[j], (int *)&batInfo[6].Tempreature[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR8[j], (int *)&batInfo[7].Tempreature[j]);
     //경고 수를 할당 한다. 
     for(int i=0;i<8;i++) snmp.addIntegerHandler(oidAlarmNumber[i], (int *)&alarmNumber );
     //경고를 할당한다
