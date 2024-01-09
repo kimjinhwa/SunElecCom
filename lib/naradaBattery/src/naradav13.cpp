@@ -15,6 +15,8 @@ NaradaClient232::NaradaClient232()
 {
     onData=nullptr;
     SemaphoreHandle_t revDataMutex;
+//OP_LED 
+    
     //onData((NCOnData)nullptr,0);
     //onData(nullptr);
 }
@@ -44,16 +46,32 @@ void NaradaClient232::begin(){
 };
 
 
+void NaradaClient232::makeInt(int *dest,const uint8_t *src,byte len){
+    memset(dest,0x00,len*2);
+    for(int i=0;i<len;i++)dest[i]= src[i*2]<<8 | src[i*2+1];    
+}
 void NaradaClient232::makeInt(uint16_t *dest,const uint8_t *src,byte len){
     memset(dest,0x00,len*2);
     for(int i=0;i<len;i++)dest[i]= src[i*2]<<8 | src[i*2+1];    
 }
 
 /* 팩정보를 복사해 준다*/
-void NaradaClient232::copyBatInfoData(int packNumber, void* dest){
-    xSemaphoreTake(revDataMutex, portMAX_DELAY);
-    memcpy(dest,&batInfo[packNumber],sizeof(batteryInofo_t));
-    xSemaphoreGive(revDataMutex);
+void NaradaClient232::copyBatInfoData(int packNumber, batteryInofo_t* dest){
+    //xSemaphoreTake(revDataMutex, portMAX_DELAY);
+
+    dest->voltageNumber = batInfo[packNumber].voltageNumber = packNumber*1;
+    for(int j=0;j<15;j++)dest->voltage[j]= batInfo[packNumber].voltage[j];
+    dest->ampere =  batInfo[packNumber].ampere;
+    dest->soc =  batInfo[packNumber].soc;
+    dest->Capacity = batInfo[packNumber].Capacity;
+    dest->TempreatureNumber=  batInfo[packNumber].TempreatureNumber;
+    for(int j=0;j<4;j++)dest->Tempreature[j]=  batInfo[packNumber].Tempreature[j];
+    for(int j=0;j<5;j++)dest->packStatus[j] = batInfo[packNumber].packStatus[j];
+    dest->readCycleCount = batInfo[packNumber].readCycleCount;
+    dest->voltageNumber =  batInfo[packNumber].voltageNumber;
+    dest->SOH = batInfo[packNumber].SOH;
+    dest->BMS_PROTECT_STATUS =  batInfo[packNumber].BMS_PROTECT_STATUS;
+    //xSemaphoreGive(revDataMutex);
 }
 int NaradaClient232::dataParse(int packNumber,const uint8_t *revData){
     revData = revData+4;
@@ -122,14 +140,53 @@ Error NaradaClient232::readAnswerData(int packNumber){
     int timeOut = 100;
     uint8_t revData[255];
     memset(revData,0x00,255);
-    if(!Serial.available()){
+    Serial2.setTimeout(1000);
+    digitalWrite(OP_LED, 0); // Receive mode
+    //처음 데이타를 기다린다.j
+    while(!Serial2.available()){
         loopCount++;
         vTaskDelay(10);
-        if(loopCount >= timeOut) return TIMEOUT;
+        if(loopCount >= timeOut){
+            return TIMEOUT;
+        } 
     }
-    readCount =  Serial.readBytes(revData,4);
-    if(readCount<4) return TIMEOUT;
-    readCount +=  Serial.readBytes(&revData[4],revData[3]+2);// 마지막  checksum Flag 0x0D
+    int c=0x00;
+    loopCount = 0;
+
+    int start =0;
+    while (Serial2.available())
+    {
+        c = Serial2.read();
+        if (c == 0x7e) start = 1;
+        if (start)
+        {
+            revData[readCount] = c;
+            readCount++;
+            while (!Serial2.available())
+            {
+                loopCount++;
+                vTaskDelay(5);
+                if (loopCount >= 4)
+                {
+                    loopCount = 0;
+                    break;
+                }
+            }
+            if (readCount > 254)
+                break;
+        }
+    };
+    // readCount =  Serial2.readBytes(revData,4);
+    // if(readCount<4) return TIMEOUT;
+    // readCount +=  Serial2.readBytes(&revData[4],revData[3]+2);// 마지막  checksum Flag 0x0D
+    for(int i=0;i<readCount;i++)
+        Serial.printf(" %02x",revData[i]);
+    Serial.printf("\nRead count is %d",readCount);
+
+    while(Serial2.available() ) Serial2.read();
+    
+    return SUCCESS;
+
     if(readCount < (revData[3]+4) ) return TIMEOUT;
     //명령어 4개 + data 0x56(86) + checksum + endflag = 92
     dataParse(packNumber, revData);
@@ -146,33 +203,42 @@ void NaradaClient232::getPackData(int packNumber){
     sendData[index++] = 01;//x01;
     sendData[index++] = 00;//x01;
     sendData[index++] =checksum(sendData,index);
-    sendData[index++] = 00;//checksum
     sendData[index++] = 0x0D;//x01;
-    Serial.write(sendData,index);
-    readAnswerData(packNumber);
+    Serial.println();
+    for(int i = 0;i < index ; i++) Serial.printf(" %02x",sendData[i]);
+    Serial.println();
+    digitalWrite(OP_LED, 1); // Write mode
+    delay(1);
+    Serial2.write(sendData,index);
+    Serial2.flush();
+    digitalWrite(OP_LED, 0); // Receive mode
+    delay(10);
+    //readAnswerData(packNumber);
 };
 
-NaradaClient232 naradaClient232;
 static int interval = 1000;
 static unsigned long previousmills = 0;
 static int everySecondInterval = 2000;
 static unsigned long now;
 void h_pxNaradaV13Request(void *parameter)
 {
-    naradaClient232.begin();
+    naradaClient485.begin();
     int packNumber =0;
     for (;;)
     {
         now = millis();
+        if(Serial2.available())
+            Serial.printf(" %2x",Serial2.read());
         if ((now - previousmills > everySecondInterval))
         {
-            naradaClient232.getPackData(packNumber);
+            //naradaClient485.getPackData(1);
+            //delay(10);
             previousmills = now;
             packNumber++;
             if(packNumber >= MAX_PACK_NUMBER) packNumber =0;     
+            //vTaskDelay(3000);
         }
-        vTaskDelay(1000);
-        delay(10);
+        delay(5);
     }
 }
 // // 함수를 이용하여 숫자로 변환하는 유틸리티 함수

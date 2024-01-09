@@ -17,7 +17,7 @@
 //************************************
 //  Global Variables
 ups_modbus_data_t ups_modbus_data;
-batteryInofo_t batInfo[8];
+extern batteryInofo_t batInfo[8];
 
 static const unsigned long SENSOR_UPDATE_INTERVAL = 5000; // ms = 5 Seconds
 //************************************
@@ -28,6 +28,7 @@ static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
 static const unsigned long UPTIME_UPDATE_INTERVAL10S = 10000; // ms = 1 second
 // static unsigned long lastUptimeUpdateTime = 0;
 LED_BLINK LED_STATUS;
+void makeTestData();
 void setLedStatus(LED_BLINK status)
 {
     LED_STATUS = status;
@@ -45,6 +46,7 @@ void snmpLoop(int job)
     int pos = 0;
     int ledOnOffTime = 1000;
     LED_STATUS = APMODE;
+    makeTestData();
     while (1)
     {
         snmp.loop();
@@ -58,31 +60,12 @@ void snmpLoop(int job)
         {
             now = millis();
             sysUptime = getUptime();
-            //batInfo
-            for(int i=0;i<8;i++)
-            naradaClient232.copyBatInfoData(i,&batInfo[i]);
+            for(int i=0;i<8;i++){
+                naradaClient485.copyBatInfoData(i,&batInfo[i]);
+            }
         }
         vTaskDelay(5);
     }
-    // if ((millis() - lastLedTime > ledOnOffTime))
-    // {
-    //     if (LED_STATUS == LINKED)
-    //     {
-    //         ledOnOffTime = onoffTime_1[pos];
-    //         pos++;
-    //         if (pos >= sizeof(onoffTime_1) / sizeof(onoffTime_1[0]))
-    //             pos = 0;
-    //     }
-    //     if (LED_STATUS == APMODE)
-    //     {
-    //         ledOnOffTime = onoffTime_2[pos];
-    //         pos++;
-    //         if (pos >= sizeof(onoffTime_2) / sizeof(onoffTime_2[0]))
-    //             pos = 0;
-    //     }
-    //     digitalWrite(33, ledStatus = !ledStatus);
-    //     lastLedTime = now;
-    // }
 }
 SNMPAgent *getSnmpPointer()
 {
@@ -132,10 +115,59 @@ char *makeOidString(char *desc,const char *src,int startPos,int value){
     strncpy(desc,sub1.c_str(),sub1.length());
     return desc;
 }
+#include <string>
+int batNumber = 15;
+int idIFTBatVoltageR1_1 = 3331;
+int idIFTBatVoltageR1_2 = 3332;
+int idIFTBatVoltageR1_3 = 3333;
+int idIFTBatVoltageR1_4 = 3334;
+int idIFTBatVoltageR1_5 = 3335;
+int idIFTBatVoltageR1_6 = 3336;
+int idIFTBatVoltageR1_7 = 3337;
+int idIFTBatVoltageR1_8 = 3338;
+int idIFTBatVoltageR1_9 = 3338;
+int idIFTBatVoltageR1_10 = 3338;
+int idIFTBatVoltageR1_11 = 3338;
+int idIFTBatVoltageR1_12 = 3338;
+int idIFTBatVoltageR1_13 = 3338;
+int idIFTBatVoltageR1_14 = 3338;
+int idIFTBatVoltageR1_15 = 3338;
+
+int alarmNumber = 5;
+
+void makeTestData(){
+    for(int packNumber=0;packNumber<8;packNumber++) 
+        batInfo[packNumber].voltageNumber = packNumber*1;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        for(int j=0;j<15;j++)
+            batInfo[packNumber].voltage[j] = 20 + j;
+    for(int packNumber=0;packNumber<8;packNumber++)
+       batInfo[packNumber].ampere = 30 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].soc = 40 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].Capacity = 50 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].TempreatureNumber = 60 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        for(int j=0;j<4;j++) 
+            batInfo[packNumber].Tempreature[j] = 70+packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        for(int j=0;j<5;j++) 
+            batInfo[packNumber].packStatus[j] = 80 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].readCycleCount = 90 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].voltageNumber = 100 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].SOH = 110 + packNumber;
+    for(int packNumber=0;packNumber<8;packNumber++)
+        batInfo[packNumber].BMS_PROTECT_STATUS = 110 + packNumber;
+
+}
 void addENTITYIFTUPSHandler()
 {
-    int batNumber = 15;
-    //naradaClient232.
+    //naradaClient485.
     // ~
     // 1.3.6.1.2.1.32.1.1.15.0
     char oidData[255];
@@ -144,79 +176,123 @@ void addENTITYIFTUPSHandler()
     memset(oidData_2,0x00,255);
 
     //전압을 할당한다. 
-    for(int i=1;i<=8;i++){
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.1.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].voltageNumber);
-    }
-    //8개의 팩에 15개의 각각의 전압을 할당한다.
-    for(int i=1;i<=8;i++){
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.1.1.0",15,i);
-        memcpy(oidData_2,oidData,255);
-        //std::cout <<  std::endl;
-        for(int j=1;j<=15;j++){
-            makeOidString(oidData_2,oidData,19,j);
-            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].voltage[j]);
-            //std::cout << "   \t" << oidData_2 << std::endl;
-        }
-    }
-    for(int i=1;i<=8;i++){  // 전류를 할당한다
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.2.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].ampere);
-    }
-    for(int i=1;i<=8;i++){  // SOC를 할당한다
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.3.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
-    }
-    for(int i=1;i<=8;i++){  // 용량테이타를 할당한다
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.4.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
-    }
-    int temperatureNumber = 4;
-    for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.5.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].TempreatureNumber);
-    }
-    for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.5.1.0",15,i);
-        memcpy(oidData_2,oidData,255);
-        for(int j=1;j<=4;j++){
-            makeOidString(oidData_2,oidData,19,j);
-            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].Tempreature[j]);
-            //std::cout << "   \t" << oidData_2 << std::endl;
-        }
-    }
-    int16_t packStatusCount=0;
-    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.6.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&packStatusCount);
-    }
-    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.6.1.0",15,i);
-        memcpy(oidData_2,oidData,255);
-        for(int j=1;j<=5;j++){
-            makeOidString(oidData_2,oidData,19,j);
-            snmp.addIntegerHandler(oidData, (int *)&batInfo[i].packStatus[j]);
-            //std::cout << "   \t" << oidData_2 << std::endl;
-        }
-    }
-    int16_t packPeriodCount=0;
-    for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.7.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&packPeriodCount);
-    }
+
+    //셀수를 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatNumber[i], (int *)&batInfo[i].voltageNumber);
+    //전압을 할당한다. 
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR1[j], (int *)&batInfo[0].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR2[j], (int *)&batInfo[1].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR3[j], (int *)&batInfo[2].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR4[j], (int *)&batInfo[3].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR5[j], (int *)&batInfo[4].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR6[j], (int *)&batInfo[5].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR7[j], (int *)&batInfo[6].voltage[j]);
+    for(int j=0;j<15;j++) snmp.addIntegerHandler(oidIFTBatVoltageR8[j], (int *)&batInfo[7].voltage[j]);
+    //전류 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatCurrent[i], (int *)&batInfo[i].ampere);
+    //SOC 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatSOC[i], (int *)&batInfo[i].soc);
+    //CAPACITY 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidIFTBatCapacity[i], (int *)&batInfo[i].soc);
+    //셀수를 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidTempNumber[i], (int *)&batInfo[i].TempreatureNumber);
+    //각 랙에 온도를 할당한다 
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR1[j], (int *)&batInfo[0].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR2[j], (int *)&batInfo[1].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR3[j], (int *)&batInfo[2].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR4[j], (int *)&batInfo[3].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR5[j], (int *)&batInfo[4].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR6[j], (int *)&batInfo[5].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR7[j], (int *)&batInfo[6].voltage[j]);
+    for(int j=0;j<4;j++) snmp.addIntegerHandler(oidTempNumberR8[j], (int *)&batInfo[7].voltage[j]);
+    //경고 수를 할당 한다. 
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidAlarmNumber[i], (int *)&alarmNumber );
+    //경고를 할당한다
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR1[j], (int *)&batInfo[0].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR2[j], (int *)&batInfo[1].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR3[j], (int *)&batInfo[2].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR4[j], (int *)&batInfo[3].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR5[j], (int *)&batInfo[4].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR6[j], (int *)&batInfo[5].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR7[j], (int *)&batInfo[6].packStatus[j]);
+    for(int j=0;j<5;j++) snmp.addIntegerHandler(oidAlarmNumberR8[j], (int *)&batInfo[7].packStatus[j]);
+
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidPeriodCounter[i], (int *)&batInfo[i].readCycleCount);
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidPackVoltage[i], (int *)&batInfo[i].voltageNumber);
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidPackSOH[i], (int *)&batInfo[i].SOH);
+    for(int i=0;i<8;i++) snmp.addIntegerHandler(oidPackProtected[i], (int *)&batInfo[i].BMS_PROTECT_STATUS);
+
+
+
+    // //8개의 팩에 15개의 각각의 전압을 할당한다.
+    // for(int i=1;i<=8;i++){
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.1.1.0",15,i);
+    //     memcpy(oidData_2,oidData,255);
+    //     //std::cout <<  std::endl;
+    //     for(int j=1;j<=15;j++){
+    //         makeOidString(oidData_2,oidData,19,j);
+    //         snmp.addIntegerHandler(oidData, (int *)&batInfo[i].voltage[j]);
+    //         //std::cout << "   \t" << oidData_2 << std::endl;
+    //     }
+    // }
+    // for(int i=1;i<=8;i++){  // 전류를 할당한다
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.2.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].ampere);
+    // }
+    // for(int i=1;i<=8;i++){  // SOC를 할당한다
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.3.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
+    // }
+    // for(int i=1;i<=8;i++){  // 용량테이타를 할당한다
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.4.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].soc);
+    // }
+    // int temperatureNumber = 4;
+    // for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.5.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].TempreatureNumber);
+    // }
+    // for(int i=1;i<=8;i++){  // 온도테이타를 할당한다
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.5.1.0",15,i);
+    //     memcpy(oidData_2,oidData,255);
+    //     for(int j=1;j<=4;j++){
+    //         makeOidString(oidData_2,oidData,19,j);
+    //         snmp.addIntegerHandler(oidData, (int *)&batInfo[i].Tempreature[j]);
+    //         //std::cout << "   \t" << oidData_2 << std::endl;
+    //     }
+    // }
+    // int16_t packStatusCount=0;
+    // for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.6.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&packStatusCount);
+    // }
+    // for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.6.1.0",15,i);
+    //     memcpy(oidData_2,oidData,255);
+    //     for(int j=1;j<=5;j++){
+    //         makeOidString(oidData_2,oidData,19,j);
+    //         snmp.addIntegerHandler(oidData, (int *)&batInfo[i].packStatus[j]);
+    //         //std::cout << "   \t" << oidData_2 << std::endl;
+    //     }
+    // }
+    // int16_t packPeriodCount=0;
+    // for(int i=1;i<=8;i++){  // 팩의 상태값을 나타낸다 
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.7.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&packPeriodCount);
+    // }
     
-    for(int i=1;i<=8;i++){  // Total Voltage
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.8.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].totalVoltage);
-    }
-    for(int i=1;i<=8;i++){  // Total Voltage
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.9.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].SOH);
-    }
-    for(int i=1;i<=8;i++){  // Total Voltage
-        makeOidString(oidData,"1.3.6.1.2.1.32.1.10.0",15,i);
-        snmp.addIntegerHandler(oidData, (int *)&batInfo[i].BMS_PROTECT_STATUS);
-    }
+    // for(int i=1;i<=8;i++){  // Total Voltage
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.8.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].totalVoltage);
+    // }
+    // for(int i=1;i<=8;i++){  // Total Voltage
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.9.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].SOH);
+    // }
+    // for(int i=1;i<=8;i++){  // Total Voltage
+    //     makeOidString(oidData,"1.3.6.1.2.1.32.1.10.0",15,i);
+    //     snmp.addIntegerHandler(oidData, (int *)&batInfo[i].BMS_PROTECT_STATUS);
+    // }
 
 //    snmp.addIntegerHandler(oidIFTBatVoltage_1, (int *)&ups_modbus_data.Year_made);
 // 1.3.6.1.2.1.32.1.2.0  전류
@@ -456,12 +532,12 @@ void snmpSetup()
     snmp.begin();
     addRFC1213MIBHandler();      // RFC1213-MIB (System)
     addENTITYMIBHandler();       // ENTITY-MIB
-    addENTITYSENSORMIBHandler(); // ENTITY-SENSOR-MIB
-    addENTITYKEPHandler();       // Korea Electric Power
+    //addENTITYSENSORMIBHandler(); // ENTITY-SENSOR-MIB
+    //addENTITYKEPHandler();       // Korea Electric Power
     addENTITYIFTUPSHandler();
     snmp.sortHandlers();
 
-    // Read previously stored values, if any.
+    //Read previously stored values, if any.
     if (loadSNMPValues())
     {
         Serial.println(F("Loaded stored values"));
@@ -474,3 +550,23 @@ void snmpSetup()
         printFile(savedValuesFile);
     }
 }
+
+    // if ((millis() - lastLedTime > ledOnOffTime))
+    // {
+    //     if (LED_STATUS == LINKED)
+    //     {
+    //         ledOnOffTime = onoffTime_1[pos];
+    //         pos++;
+    //         if (pos >= sizeof(onoffTime_1) / sizeof(onoffTime_1[0]))
+    //             pos = 0;
+    //     }
+    //     if (LED_STATUS == APMODE)
+    //     {
+    //         ledOnOffTime = onoffTime_2[pos];
+    //         pos++;
+    //         if (pos >= sizeof(onoffTime_2) / sizeof(onoffTime_2[0]))
+    //             pos = 0;
+    //     }
+    //     digitalWrite(33, ledStatus = !ledStatus);
+    //     lastLedTime = now;
+    // }

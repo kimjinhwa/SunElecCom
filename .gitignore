@@ -15,5 +15,5 @@ uploadFirmware/
 *~
 *.swp
 UploadFiles/Deploy - Shortcut.lnk
-Version.h
+#Version.h
 *.egg

@@ -28,7 +28,7 @@
 #include "../Version.h"
 #include "main.h"
 #include "upstype.h"
-#include "modbusRtu.h"
+//#include "modbusRtu.h"
 #include <naradav13.h>
 
 #define LED_1 2
@@ -55,8 +55,6 @@
 
 #define ADDRESS_485 1
 
-//modbusRtu rtu485_LCD;
-ModbusServerRTU rtu485_LCD(2000);
 int8_t debugFlag = 0;
 BluetoothSerial SerialBT;
 uint8_t setOutputDirection = 0;
@@ -97,8 +95,10 @@ WebSocketsServer webSocket = WebSocketsServer(WEBSOCKET_PORT);
 WebServer webServer(WEB_PORT );
 
 esp_spp_cb_t callback = NULL;
+NaradaClient232 naradaClient485;
+batteryInofo_t batInfo[8];
 
-// void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
+void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 bool saveSNMPValues();
 bool check_useridpass(String userid, String passwd);
 bool check_pass(String userid, String passwd);
@@ -127,18 +127,18 @@ int log_printf_telnet(const char *fmt, ...);
 WiFiClient Client;
 WiFiServer telnetServer(TELNET_PORT );
 
-IPAddress ipaddress(192, 168, 0, 57);
+IPAddress ipaddress(192, 168, 0, 200);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnetmask(255, 255, 255, 0);
 IPAddress dns1(164, 124, 101, 2);
 IPAddress dns2(8, 8, 8, 8);
-IPAddress websocketserver(192, 168, 0, 57);
+IPAddress websocketserver(192, 168, 0, 200);
 IPAddress ntp_1(203, 248, 240, 140);
 IPAddress ntp_2(13, 209, 84, 50);
 
 uint16_t webSocketPort = 81;
-QueueHandle_t h_queue;
-QueueHandle_t h_sendSocketQueue;
+//QueueHandle_t h_queue;
+//QueueHandle_t h_sendSocketQueue;
 
 int EthLan8720Start();
 void readInputSerialBT();
@@ -1466,19 +1466,19 @@ int EthLan8720Start()
   int retrycount = 0;
 
   if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
-    printf("Eth config failed...\r\n");
+    Serial.printf("Eth config failed...\r\n");
   else
-    printf("Eth config succeed...\r\n");
+    Serial.printf("Eth config succeed...\r\n");
   while (!ETH.linkUp())
   {
-    printf("\r\nconnecting...");
-    delay(1000);
-    if (retrycount++ >= 10)
+    Serial.printf("\r\nconnecting...");
+    delay(100);
+    if (retrycount++ >= 30)
     {
       return -1;
     }
   }
-  printf("\r\nConnected\r\n");
+  Serial.printf("\r\nConnected\r\n");
   telnetServer.begin();
   // server.setNoDelay(true);
   printf("\r\nReady! Use 'telnet ");
@@ -1987,10 +1987,10 @@ void readnWriteEEProm()
   {
     selectPrintf(0, "\n\rInitialize....Ipset memory....to default..");
     EEPROM.writeByte(0, 0x55);
-    ipAddress_struct.IPADDRESS = (uint32_t)IPAddress(192, 168, 0, 57);
+    ipAddress_struct.IPADDRESS = (uint32_t)IPAddress(192, 168, 0, 200);
     ipAddress_struct.GATEWAY = (uint32_t)IPAddress(192, 168, 0, 1);
     ipAddress_struct.SUBNETMASK = (uint32_t)IPAddress(255, 255, 255, 0);
-    ipAddress_struct.WEBSOCKETSERVER = (uint32_t)IPAddress(192, 168, 0, 57);
+    ipAddress_struct.WEBSOCKETSERVER = (uint32_t)IPAddress(192, 168, 0, 200);
     ipAddress_struct.DNS1 = (uint32_t)IPAddress(8, 8, 8, 8);
     ipAddress_struct.DNS2 = (uint32_t)IPAddress(164, 124, 101, 2);
     ipAddress_struct.WEBSERVERPORT = 81;
@@ -2232,65 +2232,64 @@ void setup()
 {
   pinMode(OP_LED, OUTPUT);
   EEPROM.begin(100);
-  readnWriteEEProm();
   Serial.begin(BAUDRATEDEF);
-
-  rtu485_LCD.begin(Serial2);
-  rtu485_LCD.registerWorker(ADDRESS_485,READ_HOLD_REGISTER,&FC03);
-  rtu485_LCD.registerWorker(ADDRESS_485,READ_INPUT_REGISTER,&FC03);
-  
+  pinMode(OP_LED,OUTPUT);
+  digitalWrite(OP_LED, 0); // receive mode
+  Serial.printf("\r\nUsing 485 for Battery communication");
+  Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN); // for 485
 
   String macAddress = WiFi.macAddress();
-
   macAddress.replace(":", "");
+  Serial.printf("\r\nUsing Bluetooth communication with IFTECH_%s",macAddress);
   SerialBT.begin("IFTECH_" + macAddress);
   callback = onBTConnect;
   SerialBT.register_callback(&callback);
 
-  setRtc();
+  // int16_t qSocketSendRequest[5];
+  // int16_t qRequest[5];
+  // memset(qRequest, 0x00, 5);
+  // memset(qSocketSendRequest, 0x00, 5);
+  // h_queue = xQueueCreate(5, sizeof(qRequest));
+  // h_sendSocketQueue = xQueueCreate(5, sizeof(qSocketSendRequest));
+  // if (h_queue == 0 || h_sendSocketQueue == 0)
+  // {
+  //   printf("\r\nFailed to create queue= %p\n", h_queue);
+  // }
 
-  int16_t qSocketSendRequest[5];
-  int16_t qRequest[5];
-  memset(qRequest, 0x00, 5);
-  memset(qSocketSendRequest, 0x00, 5);
-  h_queue = xQueueCreate(5, sizeof(qRequest));
-  h_sendSocketQueue = xQueueCreate(5, sizeof(qSocketSendRequest));
-  if (h_queue == 0 || h_sendSocketQueue == 0)
-  {
-    printf("\r\nFailed to create queue= %p\n", h_queue);
-  }
-
-  printf("\r\nlittleFsInit");
+  Serial.printf("\r\nlittleFsInit");
   littleFsInit(0);
-  printf("\r\nreadnWriteEEProm");
+  Serial.printf("\r\nreadnWriteEEProm");
   readnWriteEEProm();
-  printf("\r\nEthLan8720Start");
+
+  Serial.printf("\r\nEthLan8720Start");
   if (EthLan8720Start())
   {
-    printf("\r\nWiFi.softAPConfig");
-    printf("\r\nWiFi.mode(WIFI_MODE_AP)");
-    printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
+    Serial.printf("\r\nWiFi.softAPConfig");
+    //WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
+    Serial.printf("\r\nWiFi.mode(WIFI_MODE_AP)");
+    //WiFi.mode(WIFI_MODE_AP);
+    //macAddress = String(soft_ap_ssid) + macAddress;
+    Serial.printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
+    //WiFi.softAP(macAddress.c_str(), soft_ap_password);
   }
   else
   {
-    printf("\r\nEthernet connection succeed");
+    Serial.printf("\r\nEthernet connection succeed");
   }
-  httpServerOnset();
   printf("\r\nWebServer Begin");
+  httpServerOnset();
   webServer.begin();
-  setIpaddressToEthernet();
-  SimpleCLISetUp();
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
-
+  setIpaddressToEthernet();
+  SimpleCLISetUp();
+  setRtc();
+  naradaClient485.begin();
   xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
   xTaskCreate(h_pxNaradaV13Request, "h_pxNaradaV13", 10240, NULL, 1, h_pxNaradaV13);
-  xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
-//   // 7168 8192 10240
+  // xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
+
   cli.parse("user");
-//   // esp_log_level_set("*", ESP_LOG_VERBOSE);
-//  esp_log_level_set("*", ESP_LOG_ERROR);
-//   // esp_log_set_vprintf(telnet_write);
 }
 
 static int interval = 1000;
@@ -2298,11 +2297,9 @@ static unsigned long previousmills = 0;
 static int everySecondInterval = 1000;
 static unsigned long now;
 
-void loop()
-{
+void loop() {
   webServer.handleClient();
   webSocket.loop();
-
   if (SerialBT.available()) readInputSerialBT();
   now = millis();
   if ((now - previousmills > everySecondInterval))
@@ -2311,3 +2308,7 @@ void loop()
   }
   vTaskDelay(10);
 }
+
+//   // esp_log_level_set("*", ESP_LOG_VERBOSE);
+//  esp_log_level_set("*", ESP_LOG_ERROR);
+//   // esp_log_set_vprintf(telnet_write);
