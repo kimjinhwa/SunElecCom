@@ -1,0 +1,1892 @@
+LITHUME_BAT-MIB_VER01    DEFINITIONS ::= BEGIN
+IMPORTS
+	RowStatus, DisplayString, DateAndTime
+		FROM SNMPv2-TC
+	DisplayString
+		FROM RFC1213-MIB
+	enterprises, MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, IpAddress, NOTIFICATION-TYPE, Integer32
+		FROM SNMPv2-SMI;
+		
+	moduleIdentity	MODULE-IDENTITY
+	LAST-UPDATED    "201408141141"
+	ORGANIZATION    "IFTECH FOR BAT"
+	CONTACT-INFO    "mvcjhkim@gmail.com"
+	DESCRIPTION       "for common bat"
+	REVISION             "201702011300"
+	DESCRIPTION       "Description"
+	::=  {  mgmt  1  }	
+
+	batCommon	OBJECT IDENTIFIER
+		::=  {  mgmt  1  }
+
+	batStatus	OBJECT IDENTIFIER
+		::=  {  batCommon  32  }
+
+	pack1Value	OBJECT IDENTIFIER
+		::=  {  batStatus  1  }
+
+	pack2Value	OBJECT IDENTIFIER
+		::=  {  batStatus  2  }
+	
+	pack3Value	OBJECT IDENTIFIER
+		::=  {  batStatus  3  }
+
+	pack4Value	OBJECT IDENTIFIER
+		::=  {  batStatus  4  }
+
+	pack5Value	OBJECT IDENTIFIER
+		::=  {  batStatus  5  }
+
+	pack6Value	OBJECT IDENTIFIER
+		::=  {  batStatus  6  }
+
+	pack7Value	OBJECT IDENTIFIER
+		::=  {  batStatus  7  }
+
+	pack8Value	OBJECT IDENTIFIER
+		::=  {  batStatus  8  }
+	
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack1Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack1Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack1Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack1Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack2Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack2Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack2Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack2Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+			
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack3Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack3Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack3Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack3Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack4Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack4Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack4Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack4Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack5Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack5Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack5Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack5Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack6Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack6Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack6Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack6Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack7Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack7Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack7Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack7Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+	voltageMeasure	OBJECT IDENTIFIER
+		::=  {  pack8Value	1  }
+
+	ampere	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	2  }
+
+	SOC OBJECT-TYPE 	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	3  }
+
+	capacity	OBJECT-TYPE	
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	4  }
+
+	temperature	OBJECT IDENTIFIER
+		::=  {  pack8Value	5  }
+
+	alarm_status OBJECT IDENTIFIER
+		::=  {  pack8Value	6  }
+
+	period_Counter OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	7  }
+
+	PackVoltage OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	8  }
+
+	SOH	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	9  }
+
+	Protected	OBJECT-TYPE
+		SYNTAX			Integer32
+		MAX-ACCESS		read-write
+		STATUS			current
+		DESCRIPTION		"Current"
+		::=  {  pack8Value	10  }
+
+		cell1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured Year"
+			::=  {  voltageMeasure	1  }
+
+
+		cell2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	2  }
+		
+		cell3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	3  }
+		
+		cell4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	4  }
+
+		cell5        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	5  }
+
+		cell6        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	6  }
+
+		cell7        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	7  }
+			
+		cell8        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	8  }
+
+		cell9        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	9  }
+			
+		cell10        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	10 }
+			
+		cell11        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	11 }
+
+		cell12        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	12 }
+
+		cell13        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	13 }
+		
+		cell14        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	14 }
+
+		cell15        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	15 }
+
+		cell16        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  voltageMeasure	16 }
+	
+		temperature1        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	1 }
+		
+		temperature2        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	2 }
+
+		temperature3        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature	3}
+			
+		temperature4        OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  temperature		4}
+		
+		status1	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 1}
+		status2	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 2}
+		status3	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 3}
+		status4	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 4}
+		status5	OBJECT-TYPE	
+			SYNTAX			Integer32
+			MAX-ACCESS		read-write
+			STATUS			current
+			DESCRIPTION		"Manufactured month"
+			::=  {  alarm_status 5}
+
+
+
+END

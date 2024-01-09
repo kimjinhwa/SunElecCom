@@ -1,0 +1,12 @@
+IFTECH_UPS_MIB_VER_01.MIB
+
+
+.iso.org.dod.internet.mgmt.upsCommon.upsStatus.upsValue.upsMeasure.Installed_Battery_Cells.0
+의 항목을 찾아서 값을 본 후.
+
+Set Value에 값을 넣은후 
+
+메뉴의 operation -> Set 을 수행한다.
+
+
+
