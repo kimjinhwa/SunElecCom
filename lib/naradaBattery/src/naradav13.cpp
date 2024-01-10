@@ -71,7 +71,7 @@ void NaradaClient232::copyBatInfoData(int packNumber, batteryInofo_t* dest){
     for(int j=0;j<4;j++)dest->Tempreature[j]=  batInfo[packNumber].Tempreature[j];
     for(int j=0;j<5;j++)dest->packStatus[j] = batInfo[packNumber].packStatus[j];
     dest->readCycleCount = batInfo[packNumber].readCycleCount;
-    dest->voltageNumber =  batInfo[packNumber].voltageNumber;
+    dest->totalVoltage=  batInfo[packNumber].totalVoltage;
     dest->SOH = batInfo[packNumber].SOH;
     dest->BMS_PROTECT_STATUS =  batInfo[packNumber].BMS_PROTECT_STATUS;
     xSemaphoreGive(revDataMutex);
@@ -217,7 +217,8 @@ void h_pxNaradaV13Request(void *parameter)
         ValidData=readSerial2Data();
         if(ValidData){
             LOG_I("Read Data count is %d\n",readSerialCount);
-            //for(int i=0;i<readSerialCount;i++) LOG_I(" %02x",revData[i]);
+            for(int i=0;i<readSerialCount;i++) 
+                Serial.write(revData[i]);
             naradaClient485.readAnswerData();
             ValidData=0;
         }

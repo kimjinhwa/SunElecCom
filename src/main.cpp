@@ -14,7 +14,7 @@
 
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
-#include <BluetoothSerial.h>
+//#include <BluetoothSerial.h>
 #include <ModbusServerRTU.h>
 
 // for file system
@@ -56,7 +56,7 @@
 #define ADDRESS_485 1
 
 int8_t debugFlag = 0;
-BluetoothSerial SerialBT;
+//BluetoothSerial Serial.
 uint8_t setOutputDirection = 0;
 bool isBTAuthenticated = false;
 
@@ -82,7 +82,7 @@ TaskHandle_t *h_pxSnmp;
 TaskHandle_t *h_pxNaradaV13;
 TaskHandle_t *h_pxTelnetTask;
 /* setup function */
-const char *soft_ap_ssid = "CHAGER_";
+const char *soft_ap_ssid = "iftBat_";
 const char *soft_ap_password = "87654321";
 static int webRequestNo = -1;
 
@@ -94,11 +94,11 @@ RtcDS1302<ThreeWire> Rtc(myWire);
 WebSocketsServer webSocket = WebSocketsServer(WEBSOCKET_PORT);
 WebServer webServer(WEB_PORT );
 
-esp_spp_cb_t callback = NULL;
+//esp_spp_cb_t callback = NULL;
 NaradaClient232 naradaClient485;
 batteryInofo_t batInfo[8];
 
-void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
+//void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 bool saveSNMPValues();
 bool check_useridpass(String userid, String passwd);
 bool check_pass(String userid, String passwd);
@@ -141,7 +141,7 @@ uint16_t webSocketPort = 81;
 //QueueHandle_t h_sendSocketQueue;
 
 int EthLan8720Start();
-void readInputSerialBT();
+void readInputSerial();
 void writeHellowTofile();
 void littleFsInit(int bformat);
 void SimpleCLISetUp();
@@ -912,8 +912,8 @@ void selectPrintf(uint sel, const char *format, ...)
   char *buffer = (char *)malloc(length);
   if (buffer == NULL)
   {
-    if (SerialBT.hasClient())
-      SerialBT.print(buffer);
+    // if (Serial.hasClient())
+    //   Serial.print(buffer);
     va_end(args); // Clean up the variable arguments
     return;
   }
@@ -925,16 +925,16 @@ void selectPrintf(uint sel, const char *format, ...)
     {
       if (Client && Client.connected())
         Client.printf(buffer);
-      if (SerialBT.hasClient())
-        SerialBT.print(buffer);
+      // if (Serial.hasClient())
+      //   Serial.print(buffer);
     }
   }
   else
   {
     if (Client && Client.connected())
       Client.printf(buffer);
-    if (SerialBT.hasClient())
-      SerialBT.print(buffer);
+    // if (Serial.hasClient())
+    //   Serial.print(buffer);
   }
   free(buffer);
   va_end(args);
@@ -1276,16 +1276,16 @@ void ip_configCallback(cmd *cmdPtr)
   // }
   EEPROM.writeBytes(1, (const byte *)&ipAddress_struct, sizeof(nvsSystemSet));
   EEPROM.commit();
-  FILE *fp;
-  fp = fopen("/spiffs/ipaddress.txt", "w+");
-  if (fp)
-  {
-    fwrite((nvsSystemSet *)&ipAddress_struct, sizeof(nvsSystemSet), 1, fp);
-  }
-  fclose(fp);
-  fp = fopen("/spiffs/ipaddress.txt", "r");
-  fread((nvsSystemSet *)&ipAddress_struct, sizeof(nvsSystemSet), 1, fp);
-  fclose(fp);
+  // FILE *fp;
+  // fp = fopen("/spiffs/ipaddress.txt", "w+");
+  // if (fp)
+  // {
+  //   fwrite((nvsSystemSet *)&ipAddress_struct, sizeof(nvsSystemSet), 1, fp);
+  // }
+  // fclose(fp);
+  // fp = fopen("/spiffs/ipaddress.txt", "r");
+  // fread((nvsSystemSet *)&ipAddress_struct, sizeof(nvsSystemSet), 1, fp);
+  // fclose(fp);
 
   doc_tx["ipaddress"] = ipaddress.toString();
   doc_tx["gateway"] = gateway.toString();
@@ -1384,7 +1384,7 @@ void SimpleCLISetUp()
   cmd_ls_config = cli.addCommand("mv", mv_configCallback);
 
   cmd_ls_config = cli.addCommand("ipaddress", ip_configCallback);
-  cmd_ls_config.addFlagArgument("s/et");
+  cmd_ls_config.addFlagArgument("set");
   cmd_ls_config.addArgument("i/paddr", "<ip address>");
   cmd_ls_config.addArgument("s/ubnetmask", "<ip address>");
   cmd_ls_config.addArgument("g/ateway", "<ip address>");
@@ -1409,55 +1409,55 @@ void SimpleCLISetUp()
 
 void setIpaddressToEthernet()
 {
-  FILE *fp = fopen("/spiffs/ipaddress.txt", "r");
-  if (fp)
-  { // 존재하면....
-    printf("\r\nIpaddress.txt file exist");
-    char *line;
-    size_t len = 0;
-    ssize_t readLength;
-    readLength = __getline(&line, &len, fp);
-    if (readLength)
-    {
-      if (ipaddress.fromString(line) == false)
-      {
-        printf("\r\nWrong Ip %s", line);
-        return;
-      }
-      printf("\r\nIpaddress %s", ipaddress.toString().c_str());
-    }
-    readLength = __getline(&line, &len, fp);
-    if (readLength)
-    {
-      if (gateway.fromString(line) == false)
-      {
-        printf("\r\nWrong Gateway %s", line);
-        return;
-      }
-      printf("\r\nGateway %s", gateway.toString().c_str());
-    }
-    readLength = __getline(&line, &len, fp);
-    if (readLength)
-    {
-      if (subnetmask.fromString(line) == false)
-      {
-        printf("\r\nWrong subnet mask %s", line);
-        return;
-      }
-      printf("\r\nsubnet mask %s", subnetmask.toString().c_str());
-    }
+  // FILE *fp = fopen("/spiffs/ipaddress.txt", "r");
+  // if (fp)
+  // { // 존재하면....
+  //   printf("\r\nIpaddress.txt file exist");
+  //   char *line;
+  //   size_t len = 0;
+  //   ssize_t readLength;
+  //   readLength = __getline(&line, &len, fp);
+  //   if (readLength)
+  //   {
+  //     if (ipaddress.fromString(line) == false)
+  //     {
+  //       printf("\r\nWrong Ip %s", line);
+  //       return;
+  //     }
+  //     printf("\r\nIpaddress %s", ipaddress.toString().c_str());
+  //   }
+  //   readLength = __getline(&line, &len, fp);
+  //   if (readLength)
+  //   {
+  //     if (gateway.fromString(line) == false)
+  //     {
+  //       printf("\r\nWrong Gateway %s", line);
+  //       return;
+  //     }
+  //     printf("\r\nGateway %s", gateway.toString().c_str());
+  //   }
+  //   readLength = __getline(&line, &len, fp);
+  //   if (readLength)
+  //   {
+  //     if (subnetmask.fromString(line) == false)
+  //     {
+  //       printf("\r\nWrong subnet mask %s", line);
+  //       return;
+  //     }
+  //     printf("\r\nsubnet mask %s", subnetmask.toString().c_str());
+  //   }
 
-    fclose(fp);
-  }
-  else
-  {
-    printf("\r\nipaddress.txt file not found. Use default Ipaddress");
-  }
-  fclose(fp);
-  if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
-    printf("Eth config failed...\r\n");
-  else
-    printf("Eth config succeed...\r\n");
+  //   fclose(fp);
+  // }
+  // else
+  // {
+  //   printf("\r\nipaddress.txt file not found. Use default Ipaddress");
+  // }
+  // fclose(fp);
+  // if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
+  //   printf("Eth config failed...\r\n");
+  // else
+  //   printf("Eth config succeed...\r\n");
 }
 int EthLan8720Start()
 {
@@ -1473,7 +1473,7 @@ int EthLan8720Start()
   {
     Serial.printf("\r\nconnecting...");
     delay(100);
-    if (retrycount++ >= 30)
+    if (retrycount++ >= 100)
     {
       return -1;
     }
@@ -1788,11 +1788,14 @@ void httpServerOnset()
           if (Update.end(true))
           { // true to set the size to the current progress
             webServer.send(200, "text/plain", "Update Success ");
-            printf("Update Success: %u\r\nRebooting...\r\n", upload.totalSize);
+            printf("\n\n\n\nUpdate Success: %u\n\n\n\r\nRebooting...\r\n", upload.totalSize);
           }
           else
           {
             Update.printError(USE_SERIAL);
+            webServer.send(200, "text/plain", "Update FAIL");
+            webServer.send(200, "text/plain", "Update FAIL");
+            webServer.send(200, "text/plain", "Update FAIL");
             webServer.send(200, "text/plain", "Update FAIL");
           }
         }
@@ -2100,57 +2103,32 @@ void setRtc()
   tmv.tv_usec = 0;
   settimeofday(&tmv, NULL);
 }
-void readInputSerialBT()
+void readInputSerial()
 {
   char readBuf[2];
   char readCount = 0;
-  if (!isBTAuthenticated)
+  if (Serial.available())
   {
-    SerialBT.println("Please Input passwd: ");
-    if (!isBTAuthenticated)
+    if (Serial.readBytes(readBuf, 1))
     {
-      String incomingData = SerialBT.readStringUntil('\n');
-      incomingData.trim();
-      if (check_pass(incomingData))
+      readBuf[1] = 0x00;
+      if (readBuf[0] == 8)
       {
-        isBTAuthenticated = true;
-        SerialBT.println("Authentication successful!");
+        input.remove(input.length() - 1);
       }
       else
       {
-        SerialBT.println("Authentication failed!");
+        printf("%c", readBuf[0]);
+        input += String(readBuf);
       }
     }
-    // You can put any initialization or setup code here that you want
-    // to execute when a device is connected.
-  }
-  if (isBTAuthenticated)
-  {
-    if (SerialBT.available())
+    if (readBuf[0] == '\n' || readBuf[0] == '\r')
     {
-      if (SerialBT.readBytes(readBuf, 1))
-      {
-        readBuf[1] = 0x00;
-        if (readBuf[0] == 8)
-        {
-          input.remove(input.length() - 1);
-        }
-        else
-        {
-          printf("%c", readBuf[0]);
-          input += String(readBuf);
-        }
-      }
-      if (readBuf[0] == '\n' || readBuf[0] == '\r')
-      {
-        setOutputDirection = BLUETOOTH;
-        cli.parse(input);
-        setOutputDirection = NONE;
-        SerialBT.readBytes(readBuf, 1);
-        input = "";
-        SerialBT.printf("\n# ");
-        // break;
-      }
+      cli.parse(input);
+      Serial.readBytes(readBuf, 1);
+      input = "";
+      //Serial.printf("\n# ");
+      // break;
     }
   }
 }
@@ -2219,14 +2197,14 @@ void telnetTask(void *parameter)
     vTaskDelay(5);
   }
 }
-void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
-{
-  if (event == ESP_SPP_SRV_OPEN_EVT)
-  {
-    USE_SERIAL.println("Bluetooth device connected!");
-    SerialBT.println("Please Input passwd: ");
-  }
-}
+// void onBTConnect(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
+// {
+//   if (event == ESP_SPP_SRV_OPEN_EVT)
+//   {
+//     USE_SERIAL.println("Bluetooth device connected!");
+//     Serial.println("Please Input passwd: ");
+//   }
+// }
 
 void setup()
 {
@@ -2241,9 +2219,9 @@ void setup()
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
   Serial.printf("\r\nUsing Bluetooth communication with IFTECH_%s",macAddress);
-  SerialBT.begin("IFTECH_" + macAddress);
-  callback = onBTConnect;
-  SerialBT.register_callback(&callback);
+  //Serial.begin("IFTECH_" + macAddress);
+  // callback = onBTConnect;
+  // Serial.register_callback(&callback);
 
   // int16_t qSocketSendRequest[5];
   // int16_t qRequest[5];
@@ -2265,12 +2243,12 @@ void setup()
   if (EthLan8720Start())
   {
     Serial.printf("\r\nWiFi.softAPConfig");
-    //WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
+    WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
     Serial.printf("\r\nWiFi.mode(WIFI_MODE_AP)");
-    //WiFi.mode(WIFI_MODE_AP);
-    //macAddress = String(soft_ap_ssid) + macAddress;
+    WiFi.mode(WIFI_MODE_AP);
+    macAddress = String(soft_ap_ssid) + macAddress;
     Serial.printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
-    //WiFi.softAP(macAddress.c_str(), soft_ap_password);
+    WiFi.softAP(macAddress.c_str(), soft_ap_password);
   }
   else
   {
@@ -2287,7 +2265,7 @@ void setup()
   naradaClient485.begin();
   xTaskCreate(snmpRequest, "snmptech", 10240, NULL, 1, h_pxSnmp);
   xTaskCreate(h_pxNaradaV13Request, "h_pxNaradaV13", 10240, NULL, 1, h_pxNaradaV13);
-  // xTaskCreate(telnetTask, "telnetTask", 10240, NULL, 1, h_pxTelnetTask);
+  xTaskCreate(telnetTask, "telnetTask", 5000, NULL, 1, h_pxTelnetTask);
 
   cli.parse("user");
 }
@@ -2300,8 +2278,7 @@ static unsigned long now;
 void loop() {
   webServer.handleClient();
   webSocket.loop();
-  if (SerialBT.available()) readInputSerialBT();
-  //if(Serial.available())SerialBT.print(Serial.read());
+  if (Serial.available()) readInputSerial();
   now = millis();
   if ((now - previousmills > everySecondInterval))
   {
