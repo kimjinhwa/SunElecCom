@@ -2268,6 +2268,7 @@ void setup()
   xTaskCreate(telnetTask, "telnetTask", 5000, NULL, 1, h_pxTelnetTask);
 
   cli.parse("user");
+  delay(100);
 }
 
 static int interval = 1000;
