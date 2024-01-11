@@ -140,20 +140,8 @@ int NaradaClient232::dataParseExt(int packNumber,const uint8_t *revData){
     return SUCCESS;
 }
 Error NaradaClient232::readAnswerData(){
-    Serial.printf("\n\nChecksum is %02x %02x\n\n ",revData[4+revData[3]] ,checksum(revData,4+revData[3]));
-    //LOG_I("\n-----Data count is %d %d\n",readSerialCount ,revData[3]+4+2);
-    Serial.println();
-    Serial.println();
-    Serial.printf("\n-----Receive Data count is %d %d\n",readSerialCount ,revData[3]+4+2);
-    Serial.println();
-    Serial.println();
-    for(int i=0;i<revData[3]+4+2;i++)
-        Serial.printf(" %02x",revData[i]);
-    Serial.println();
-    Serial.println();
-    Serial.println();
-    //if(revData[4+revData[3]] !=  checksum(revData,4+revData[3]))return CRC_ERROR;
     dataParse(revData);
+    if(revData[4+revData[3]] !=  checksum(revData,4+revData[3]))return CRC_ERROR;
     return SUCCESS;
 }
 
