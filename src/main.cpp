@@ -11,6 +11,9 @@
 #include <RtcDS1302.h>
 #include <esp_heap_caps.h>
 #include <WiFiUDP.h>
+#include <esp_task_wdt.h>
+
+#define WDT_TIMEOUT 120 
 
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
@@ -2215,6 +2218,8 @@ void setup()
   digitalWrite(OP_LED, 0); // receive mode
   Serial.printf("\r\nUsing 485 for Battery communication");
   Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN); // for 485
+  // while(1)
+  // if(Serial2.available()) Serial.printf("%c",Serial2.read());
 
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
@@ -2269,6 +2274,8 @@ void setup()
 
   cli.parse("user");
   delay(100);
+  esp_task_wdt_init(WDT_TIMEOUT, true);
+  esp_task_wdt_add(NULL);
 }
 
 static int interval = 1000;
@@ -2277,6 +2284,7 @@ static int everySecondInterval = 1000;
 static unsigned long now;
 
 void loop() {
+  esp_task_wdt_reset();
   webServer.handleClient();
   webSocket.loop();
   if (Serial.available()) readInputSerial();
