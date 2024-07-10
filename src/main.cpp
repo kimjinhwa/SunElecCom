@@ -2218,8 +2218,21 @@ void setup()
   digitalWrite(OP_LED, 0); // receive mode
   Serial.printf("\r\nUsing 485 for Battery communication");
   Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN); // for 485
-  // while(1)
-  // if(Serial2.available()) Serial.printf("%c",Serial2.read());
+  // while (1)
+  // {
+  //   int c;
+  //   if (Serial2.available())
+  //   {
+  //     c = Serial2.read();
+  //     digitalWrite(OP_LED, 1); // Write mode
+  //     delay(1);
+  //     Serial2.printf("%c",c );
+  //     Serial2.flush();
+  //     digitalWrite(OP_LED, 0); // Receive mode
+  //     delay(10);
+  //     Serial.printf("%c",c );
+  //   }
+  // }
 
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
