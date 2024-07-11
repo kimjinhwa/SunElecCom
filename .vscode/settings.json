@@ -61,5 +61,5 @@
         "typeinfo": "cpp",
         "variant": "cpp"
     },
-    "cmake.sourceDirectory": "C:/Users/ServerManager/OneDrive/문서/PlatformIO/Projects/Esp32SNMP_Modbus/.pio/libdeps/SNMP-DEBUG/ArduinoJson"
+    "cmake.sourceDirectory": "C:/DevWork/2_SunElecCom/1_esp32Module/Esp32SNMP_Narada_LithumeV14/lib/Arduino_SNMP"
 }

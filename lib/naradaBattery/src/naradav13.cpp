@@ -8,6 +8,121 @@
 #define OPLED_OFF true
 //이제 나라다 전용의 프로토콜 클레스를 하나 만들자
 
+typedef struct 
+{
+    u_int8_t startByte;          // 0x7E   tByte = 1
+    u_int8_t packNumber;         // 0x01   tByte = 2
+    u_int8_t sequence;           // 0x01   tByte = 3
+    u_int8_t followingLength;    // 0x56   tByte = 4
+    
+    // Voltage 15 cells, 30 bytes
+    u_int8_t reqVolCmd;          // 0x01   tByte = 5
+    u_int8_t reqVolCount;        // 0x0F   tByte = 6
+    u_int16_t cellVolValue[15];  // 15 cells voltage values, tByte = 36
+
+    // Current, 4 bytes
+    u_int8_t reqChargeCurrCmd;   // 0x02   tByte = 37
+    u_int8_t reqCurrCount;       // 0x01   tByte = 38
+    u_int16_t reqCurrValue;      // Current value, tByte = 40
+
+    // SOC, 4 bytes
+    u_int8_t reqSOCCmd;          // 0x03   tByte = 41
+    u_int8_t reqSOCCount;        // 0x01   tByte = 42
+    u_int16_t reqSOCValue;       // SOC value, tByte = 44
+
+    // Charged Capacity, 4 bytes
+    u_int8_t reqChargedCmd;      // 0x04   tByte = 45
+    u_int8_t reqChargedCount;    // 0x01   tByte = 46
+    u_int16_t reqChargedValue;   // Charged capacity value, tByte = 48
+
+    // Temperature, 12 bytes
+    u_int8_t reqTemperatureCmd;  // 0x05   tByte = 49
+    u_int8_t reqTemperatureCount;// 0x06   tByte = 50
+    u_int16_t reqTemperatureValue[6]; // 6 temperature values, tByte = 62
+
+    // Alarm Status, 12 bytes
+    u_int8_t reqAlarmStatusCmd;  // 0x06   tByte = 63
+    u_int8_t reqAlarmStatusCount;// 0x05   tByte = 64
+    u_int16_t reqAlarmStatusValue[5]; // 5 alarm status values, tByte = 74
+
+    // Period Count, 4 bytes
+    u_int8_t reqPeriodCountCmd;  // 0x07   tByte = 75
+    u_int8_t reqPeriodCountCount;// 0x01   tByte = 76
+    u_int16_t reqPeriodCountValue; // Period count value, tByte = 78
+
+    // Total Voltage, 4 bytes
+    u_int8_t reqTotalVolCmd;     // 0x08   tByte = 79
+    u_int8_t reqTotalVolCount;   // 0x01   tByte = 80
+    u_int16_t reqTotalVolValue;  // Total voltage value, tByte = 82
+
+    // SOH, 4 bytes
+    u_int8_t reqSOHCmd;          // 0x09   tByte = 83
+    u_int8_t reqSOHCount;        // 0x01   tByte = 84
+    u_int16_t reqSOHValue;       // SOH value, tByte = 86
+
+    // Pack Status, 4 bytes
+    u_int8_t reqPackStatusCmd;   // 0x0A   tByte = 87
+    u_int8_t reqPackStatusCount; // 0x01   tByte = 88
+    u_int16_t reqPackStatusValue;// Pack status value, tByte = 90
+
+    // CRC, 1 byte
+    u_int8_t CRC;                // CRC value, tByte = 91
+
+    // End byte, 1 byte
+    u_int8_t endCharacter;       // End character, tByte = 92
+} naradav13Protocol;
+
+// typedef struct 
+// {
+//     u_int8_t startByte;  /*0x72   tByte= 1*/
+//     u_int8_t packNumber; /*0~15   tByte= 2 */
+//     u_int8_t sequense;   /* 1     tByte= 3 */
+//     u_int8_t followingLengh; /*0x56 tByte= 4 */
+//     //Voltage 15   32byte 
+//     u_int8_t reqVolCmd; /*0x01     tByte=5  */
+//     u_int8_t reqVolCount; /*0x0F 15셀 tByte=6   */
+//     u_int16_t CellVolValue[15]; /*0x0F 15셀 tByte= 36 */
+//     //Current   4byte
+//     u_int8_t reqChargeCurrCmd; /*0x02      37*/
+//     u_int8_t reqCurrCount; /*0x01  0A->0x75 0x30   38*/
+//     u_int16_t reqCurrValue;  /*                    40*/
+//     //SOC 4byte
+//     u_int8_t reqSOCCmd; /*0x03                     41*/
+//     u_int8_t reqSOCCount; /*0x01                   42*/
+//     u_int16_t reqSOCValue; /*                      44*/
+//     //Chargge 4byte
+//     u_int8_t reqChargedCmd; /*0x04                 45*/
+//     u_int8_t reqChargedCount; /*0x01               46*/
+//     u_int16_t reqChargedValue;/*                   48 */
+//     //Temperature  byte
+//     u_int8_t reqTemperatureCmd; /*0x05             49*/
+//     u_int8_t reqTemperatureCount; /*0x06           50*/
+//     u_int16_t reqTemperatureValue[6]    /*         62*/;
+//     //AlarmStatus  12 byte
+//     u_int8_t reqAlarmStatusCmd; /*0x06             63*/
+//     u_int8_t reqAlarmStatusCount; /*0x05           64*/
+//     u_int16_t reqAlarmStatusValue[5];/*            74*/
+//     //PeriodCount 4byte
+//     u_int8_t reqPeriodCountCmd; /*0x07             75*/
+//     u_int8_t reqPeriodCountCount; /*0x01           76*/
+//     u_int16_t reqPeriodCountValue;/*               78*/
+//     //TotalVol 4byte
+//     u_int8_t reqTotalVolCmd; /*0x08                79*/
+//     u_int8_t reqTotalVolCount; /*0x01              80*/
+//     u_int16_t reqTotalVolValue;/*                  82*/
+//     //SOH 4byte
+//     u_int8_t reqSOHCmd; /*0x09                     83*/
+//     u_int8_t reqSOHCount; /*0x01                   84*/
+//     u_int16_t reqSOHValue;/*                       86*/
+//     //PackStatus 4byte
+//     u_int8_t reqPackStatusCmd; /*0x09              87*/
+//     u_int8_t reqPackStatusCount; /*0x01            88*/
+//     u_int16_t reqPackStatusValue;/*                90*/
+//     //CRC  1byte
+//     u_int8_t CRC;     /*                          91*/
+//     //end byte
+//     u_int8_t endCharacter;     /*                          92*/
+// } naradav13Protocal;
 static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
 static unsigned long lastUptimeUpdateTime = 0;
 static int readSerialCount =0;
@@ -204,6 +319,8 @@ static unsigned long previousmills = 0;
 static int everySecondInterval = 1000;
 static int everyTwoInterval = 2000;
 static unsigned long now;
+static int requestedPacknumber=0;
+naradav13Protocol *naradaProtocol;
 void h_pxNaradaV13Request(void *parameter)
 {
     naradaClient485.begin();
@@ -213,7 +330,7 @@ void h_pxNaradaV13Request(void *parameter)
         now = millis();
         ValidData=readSerial2Data();
         if(ValidData){
-            LOG_I("Read Data count is %d\n",readSerialCount);
+            //LOG_I("Read Data count is %d\n",readSerialCount);
             for(int i=0;i<readSerialCount;i++) 
                 Serial.write(revData[i]);
             naradaClient485.readAnswerData();
@@ -221,9 +338,24 @@ void h_pxNaradaV13Request(void *parameter)
         }
         if ((now - previousmills > everyTwoInterval ))
         {
+            if(ValidData == 1){  
+                // 이것이 1 이면 요청에 대한 응답이 오지 않았다는 것이다. 
+                // 즉 모듈이 죽었을 수 있으므로 해당 데이타에 대한 오류를 보내준다.
+                //revData에는 이미 어떤 형태이든 데이타가 있다. 
+                naradaProtocol = (naradav13Protocol *)&revData;
+                for(int i=0;i<15;i++){
+                    naradaProtocol->cellVolValue[i]=0;
+                }
+                revData[0] = 0x7E; 
+                revData[1] = requestedPacknumber; 
+                naradaProtocol->CRC = naradaClient485.checksum(revData,4+revData[3]);
+                for(int i=0;i<readSerialCount;i++) 
+                    Serial.write(revData[i]);
+            };
             ValidData =0;
             naradaClient485.getPackData(packNumber );
             previousmills = now;
+            requestedPacknumber= packNumber ;
             delay(10);
             packNumber++;
             if(packNumber >= MAX_PACK_NUMBER) packNumber =0;     
