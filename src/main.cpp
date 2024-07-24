@@ -1472,11 +1472,12 @@ int EthLan8720Start()
     Serial.printf("Eth config failed...\r\n");
   else
     Serial.printf("Eth config succeed...\r\n");
+  Serial.printf("\r\nconnecting");
   while (!ETH.linkUp())
   {
-    Serial.printf("\r\nconnecting...");
+    Serial.printf(".");
     delay(100);
-    if (retrycount++ >= 100)
+    if (retrycount++ >= 10)
     {
       return -1;
     }
@@ -2260,13 +2261,14 @@ void setup()
   Serial.printf("\r\nEthLan8720Start");
   if (EthLan8720Start())
   {
-    Serial.printf("\r\nWiFi.softAPConfig");
-    WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
-    Serial.printf("\r\nWiFi.mode(WIFI_MODE_AP)");
-    WiFi.mode(WIFI_MODE_AP);
-    macAddress = String(soft_ap_ssid) + macAddress;
-    Serial.printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
-    WiFi.softAP(macAddress.c_str(), soft_ap_password);
+    Serial.printf("\r\nConnection Failed...!");
+    // Serial.printf("\r\nWiFi.softAPConfig");
+    // WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
+    // Serial.printf("\r\nWiFi.mode(WIFI_MODE_AP)");
+    // WiFi.mode(WIFI_MODE_AP);
+    // macAddress = String(soft_ap_ssid) + macAddress;
+    // Serial.printf("\r\nWiFi.softAP(soft_ap_ssid, soft_ap_password)");
+    // WiFi.softAP(macAddress.c_str(), soft_ap_password);
   }
   else
   {
