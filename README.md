@@ -1,6 +1,6 @@
 # SNMP FOR LITHUME Batteyr , NARADA PROTOCAL with V1.3
 ```
--  C:\Users\ServerManager\.platformio\penv\Scripts\platformio.exe run --target upload --environment SNMP-RELEASE
+C:\Users\ServerManager\.platformio\penv\Scripts\platformio.exe run --target upload --environment SNMP-RELEASE
 ```
 
 썬일렉콤에 납품될 리튬 축전지 48V 모듈 8개의 병렬연결에 사용될 프로그램이다. 
