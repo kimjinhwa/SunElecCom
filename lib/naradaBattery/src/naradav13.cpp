@@ -127,8 +127,7 @@ static const unsigned long UPTIME_UPDATE_INTERVAL = 1000; // ms = 1 second
 static unsigned long lastUptimeUpdateTime = 0;
 static int readSerialCount =0;
 static uint8_t revData[255];
-static int ValidData=0;
-
+extern bool dataRequest ;
 NaradaClient232::NaradaClient232()
 {
     onData=nullptr;
@@ -301,64 +300,104 @@ void NaradaClient232::getPackData(int packNumber){
     //readAnswerData(packNumber);
 };
 
-int readSerial2Data(){
-        if(Serial2.available()){
-            revData[readSerialCount] = Serial2.read();
-            readSerialCount++;
-            if(readSerialCount>4){
-                if((revData[0]= 0x7E) && (readSerialCount >= revData[3]+4+2) ) {
-                    ValidData = 1; 
-                    return 1;
-                }
+int readSerial2Data()
+{
+    int timeout = 2000; // micro second
+    int timeOut = 100;
+    while (!Serial2.available())
+    {
+        timeOut--;
+        vTaskDelay(1);
+        if (!timeOut)
+            break;
+    }
+    while (Serial2.available())
+    {
+        timeout = 2000;
+        revData[readSerialCount] = Serial2.read();
+        readSerialCount++;
+        if (readSerialCount > 4)
+        {
+            if ((revData[0] = 0x7E) && (readSerialCount >= revData[3] + 4 + 2))
+            {
+                return 1;
             }
-        };
-        return 0;
+        }
+        while (!Serial2.available())
+        {
+            delayMicroseconds(1);
+            timeout--;
+            if (!timeout)
+                break;
+        }
+    };
+    return 0;
 }
 static int interval = 1000;
 static unsigned long previousmills = 0;
 static int everySecondInterval = 1000;
 static int everyTwoInterval = 2000;
 static unsigned long now;
-static int requestedPacknumber=0;
 naradav13Protocol *naradaProtocol;
 void h_pxNaradaV13Request(void *parameter)
 {
     naradaClient485.begin();
-    int packNumber =0;
+    int packNumber = 0;
+    int ValidData;
     for (;;)
     {
         now = millis();
-        ValidData=readSerial2Data();
-        if(ValidData){
-            //LOG_I("Read Data count is %d\n",readSerialCount);
-            for(int i=0;i<readSerialCount;i++) 
-                Serial.write(revData[i]);
-            naradaClient485.readAnswerData();
-            ValidData=0;
-        }
-        if ((now - previousmills > everyTwoInterval ))
+        if ((now - previousmills > everyTwoInterval))
         {
-            if(ValidData == 1){  
-                // 이것이 1 이면 요청에 대한 응답이 오지 않았다는 것이다. 
-                // 즉 모듈이 죽었을 수 있으므로 해당 데이타에 대한 오류를 보내준다.
-                //revData에는 이미 어떤 형태이든 데이타가 있다. 
-                naradaProtocol = (naradav13Protocol *)&revData;
-                for(int i=0;i<15;i++){
-                    naradaProtocol->cellVolValue[i]=0;
+
+            //Serial.printf("\nDead Module %d is request %ld", packNumber, millis());
+            naradaClient485.getPackData(packNumber);
+            // 응답시간은 약 30ms이다.
+            //Serial.printf("\nData received %ld timeout %d\n", millis(), timeOut);
+            ValidData = readSerial2Data();
+            //Serial.printf("\nData received %d byte %ld time valid %d\n",readSerialCount, millis(), ValidData);
+            // 약 100ms소요됨
+            if (ValidData == 1)
+            {
+                if (dataRequest)
+                {
+                    for (int i = 0; i < readSerialCount; i++)
+                        Serial.write(revData[i]);
                 }
-                revData[0] = 0x7E; 
-                revData[1] = requestedPacknumber; 
-                naradaProtocol->CRC = naradaClient485.checksum(revData,4+revData[3]);
-                for(int i=0;i<readSerialCount;i++) 
-                    Serial.write(revData[i]);
+                naradaClient485.readAnswerData();
+            }
+            else
+            {
+                // 이것이 0 이면 요청에 대한 응답이 오지 않았다는 것이다.
+                // 즉 모듈이 죽었을 수 있으므로 해당 데이타에 대한 오류를 보내준다.
+                // revData에는 이미 어떤 형태이든 데이타가 있다.
+                // Serial.printf("\nDead Module is %d %d %ld\n", packNumber, readSerialCount, millis());
+                readSerialCount = 92;
+                naradaProtocol = (naradav13Protocol *)&revData;
+                for (int i = 0; i < 15; i++)
+                    naradaProtocol->cellVolValue[i] = 0;
+                for (int i = 0; i < 6; i++)
+                    naradaProtocol->reqTemperatureValue[i] = 0;
+                naradaProtocol->reqTotalVolValue = 0;
+                naradaProtocol->reqCurrValue = 0;
+                naradaProtocol->startByte = 0x7D;
+                naradaProtocol->packNumber = packNumber;
+                revData[0] = 0x7D;
+                // revData[1] = packNumber;
+                // Serial.printf("\nDead Module is %d %d %ld 0x%x\n", packNumber, readSerialCount, millis(),naradaProtocol->startByte);
+                naradaProtocol->CRC = naradaClient485.checksum(revData, 4 + revData[3]);
+                if (dataRequest)
+                {
+                    for (int i = 0; i < readSerialCount; i++)
+                        Serial.write(revData[i]);
+                }
             };
-            ValidData =0;
-            naradaClient485.getPackData(packNumber );
+
             previousmills = now;
-            requestedPacknumber= packNumber ;
             delay(10);
             packNumber++;
-            if(packNumber >= MAX_PACK_NUMBER) packNumber =0;     
+            if (packNumber >= MAX_PACK_NUMBER)
+                packNumber = 0;
         }
         delay(5);
     }

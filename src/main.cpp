@@ -153,6 +153,7 @@ String input = "";
 String sendString = "";
 int isUserLogin = 0;
 int isUserPasswd = 0;
+bool dataRequest = true;
 
 // fnmatch defines
 #define FNM_NOMATCH 1        // Match failed.
@@ -1040,6 +1041,22 @@ void format_configCallback(cmd *cmdPtr)
       return;
   }
 }
+void datareq_configCallback(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);
+  Argument arg = cmd.getArgument(0);
+  String argVal = arg.getValue();
+  int iVal;
+  selectPrintf(0, "\r\n");
+
+  if (argVal.length() == 0)
+    return;
+  iVal = argVal.toInt();
+  dataRequest  = iVal;
+  // if(!argVal.compareTo("1"))dataRequest = true;
+  // else dataRequest = false;
+  Serial.printf("\ndatareq %s %d",argVal.c_str(), dataRequest );
+}
 void cat_configCallback(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);
@@ -1376,6 +1393,8 @@ void SimpleCLISetUp()
 
   cmd_ls_config = cli.addSingleArgCmd("cat", cat_configCallback);
   cmd_ls_config = cli.addSingleArgCmd("ver", ver_configCallback);
+
+  cmd_ls_config = cli.addSingleArgCmd("datareq", datareq_configCallback);
 
   cmd_ls_config = cli.addSingleArgCmd("reboot", reboot_configCallback);
   cmd_ls_config = cli.addSingleArgCmd("debug", debug_configCallback);
