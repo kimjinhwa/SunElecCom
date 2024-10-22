@@ -63,6 +63,12 @@ int8_t debugFlag = 0;
 uint8_t setOutputDirection = 0;
 bool isBTAuthenticated = false;
 
+enum whereCliParse{
+  FromTelnet=0,
+  FromSerial=1,
+  FromWeb=2,
+};
+enum whereCliParse whereRequest;
 struct UserInfo_s
 {
   char userid[20];
@@ -133,7 +139,7 @@ WiFiServer telnetServer(TELNET_PORT );
 IPAddress ipaddress(192, 168, 0, 201);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnetmask(255, 255, 255, 0);
-IPAddress dns1(164, 124, 101, 2);
+IPAddress dns1(164, 24, 101, 2);
 IPAddress dns2(8, 8, 8, 8);
 IPAddress websocketserver(192, 168, 0, 200);
 IPAddress ntp_1(203, 248, 240, 140);
@@ -916,29 +922,27 @@ void selectPrintf(uint sel, const char *format, ...)
   char *buffer = (char *)malloc(length);
   if (buffer == NULL)
   {
-    // if (Serial.hasClient())
-    //   Serial.print(buffer);
     va_end(args); // Clean up the variable arguments
     return;
   }
   vsnprintf(buffer, length, format, args);
 
+  if(whereRequest == FromSerial){
+    Serial.print(buffer);
+    return;
+  }
   if (sel == 2)
   {
     if (debugFlag)
     {
       if (Client && Client.connected())
         Client.printf(buffer);
-      // if (Serial.hasClient())
-      //   Serial.print(buffer);
     }
   }
   else
   {
     if (Client && Client.connected())
       Client.printf(buffer);
-    // if (Serial.hasClient())
-    //   Serial.print(buffer);
   }
   free(buffer);
   va_end(args);
@@ -1096,18 +1100,18 @@ void ip_configCallback(cmd *cmdPtr)
 
   if (!strArg.isSet())
   {
-    selectPrintf(0, "\r\nipaddress %s", ipaddress.toString().c_str());
-    selectPrintf(0, "\r\ngateway %s", gateway.toString().c_str());
-    selectPrintf(0, "\r\nsubnetmask %s", subnetmask.toString().c_str());
-    selectPrintf(0, "\r\ndns1 %s", dns1.toString().c_str());
-    selectPrintf(0, "\r\ndns2 %s", dns2.toString().c_str());
-    selectPrintf(0, "\r\nNTP_1 %s", ntp_1.toString().c_str());
-    selectPrintf(0, "\r\nNTP_2 %s", ntp_2.toString().c_str());
-    selectPrintf(0, "\r\nwebsocketserver %s", websocketserver.toString().c_str());
-    selectPrintf(0, "\r\nwebSocketPort %d\r\n", webSocketPort);
-    selectPrintf(0, "\r\nbaudrate %d\r\n", ipAddress_struct.BAUDRATE);
-    selectPrintf(0, "\r\ninterval %d\r\n", ipAddress_struct.Q_INTERVAL);
-    selectPrintf(0, "\r\nver %s", version);
+    selectPrintf(0, "\nipaddress %s", ipaddress.toString().c_str());
+    selectPrintf(0, "\ngateway %s", gateway.toString().c_str());
+    selectPrintf(0, "\nsubnetmask %s", subnetmask.toString().c_str());
+    selectPrintf(0, "\nver %s", version);
+    // selectPrintf(0, "\r\ndns1 %s", dns1.toString().c_str());
+    // selectPrintf(0, "\r\ndns2 %s", dns2.toString().c_str());
+    // selectPrintf(0, "\r\nNTP_1 %s", ntp_1.toString().c_str());
+    // selectPrintf(0, "\r\nNTP_2 %s", ntp_2.toString().c_str());
+    // selectPrintf(0, "\r\nwebsocketserver %s", websocketserver.toString().c_str());
+    // selectPrintf(0, "\r\nwebSocketPort %d", webSocketPort);
+    // selectPrintf(0, "\r\nbaudrate %d", ipAddress_struct.BAUDRATE);
+    // selectPrintf(0, "\r\ninterval %d", ipAddress_struct.Q_INTERVAL);
 
     doc_tx["ipaddress"] = ipaddress.toString();
     doc_tx["gateway"] = gateway.toString();
@@ -1134,7 +1138,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong Ip address %s", strValue);
+      selectPrintf(0, "\nError Wrong Ip address %s", strValue);
       doc_tx["error"] = "Error Wrong Ipaddress ";
       return;
     }
@@ -1152,7 +1156,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong gateway %s", strValue);
+      selectPrintf(0, "\nError Wrong gateway %s", strValue);
       doc_tx["error"] = "Error Wrong gateway";
       return;
     }
@@ -1169,7 +1173,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong subnetmask %s", strValue);
+      selectPrintf(0, "\nError Wrong subnetmask %s", strValue);
       doc_tx["error"] = "Error Wrong subnetmask";
       return;
     }
@@ -1186,7 +1190,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong websocketserver %s", strValue);
+      selectPrintf(0, "\nError Wrong websocketserver %s", strValue);
       doc_tx["error"] = "Error Wrong websocketserver";
       return;
     }
@@ -1204,7 +1208,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong dns1 %s", strValue);
+      selectPrintf(0, "\nError Wrong dns1 %s", strValue);
       doc_tx["error"] = "Error Wrong dns1";
       return;
     }
@@ -1222,7 +1226,7 @@ void ip_configCallback(cmd *cmdPtr)
     strValue = strArg.getValue();
     if (IPAddress().fromString(strValue) == false)
     {
-      selectPrintf(0, "\r\nError Wrong dns2 %s", strValue);
+      selectPrintf(0, "\nError Wrong dns2 %s", strValue);
       doc_tx["error"] = "Error Wrong dns2";
       return;
     }
@@ -1243,7 +1247,7 @@ void ip_configCallback(cmd *cmdPtr)
     if_modified = true;
   }
   strArg = cmd.getArgument("baudrate");
-  // selectPrintf(0, "\r\nstrArg %s",strArg);
+  // selectPrintf(0, "\nstrArg %s",strArg);
   if (strArg.isSet())
   {
     strValue = strArg.getValue();
@@ -1272,17 +1276,17 @@ void ip_configCallback(cmd *cmdPtr)
   ipAddress_struct.DNS2 = (uint32_t)dns2;
   ipAddress_struct.WEBSERVERPORT = webSocketPort;
 
-  selectPrintf(0, "\r\nipaddress %s", IPAddress(ipAddress_struct.IPADDRESS).toString());
-  selectPrintf(0, "\r\nwateway %s", IPAddress(ipAddress_struct.GATEWAY).toString());
-  selectPrintf(0, "\r\nsubnetmask %s", IPAddress(ipAddress_struct.SUBNETMASK).toString());
-  selectPrintf(0, "\r\nwebsocket %s", IPAddress(ipAddress_struct.WEBSOCKETSERVER).toString());
-  selectPrintf(0, "\r\ndns1 %s", IPAddress(ipAddress_struct.DNS1).toString());
-  selectPrintf(0, "\r\ndns2 %s", IPAddress(ipAddress_struct.DNS2).toString());
-  selectPrintf(0, "\r\nwebserverport %d", ipAddress_struct.WEBSERVERPORT);
-  selectPrintf(0, "\r\nbaudrate %d", ipAddress_struct.BAUDRATE);
-  selectPrintf(0, "\r\nmodbus interval %d", ipAddress_struct.Q_INTERVAL);
-  selectPrintf(0, "\r\nver %s", version);
-  // selectPrintf(0, "\r\nWould you like to change IpAddress? \r\n I will be affect after reboot.(Y/n) ");
+  selectPrintf(0, "\nipaddress %s", IPAddress(ipAddress_struct.IPADDRESS).toString());
+  selectPrintf(0, "\ngateway %s", IPAddress(ipAddress_struct.GATEWAY).toString());
+  selectPrintf(0, "\nsubnetmask %s", IPAddress(ipAddress_struct.SUBNETMASK).toString());
+  selectPrintf(0, "\nver %s", version);
+  // electPrintf(0, "\nwebsocket %s", IPAddress(ipAddress_struct.WEBSOCKETSERVER).toString());
+  // selectPrintf(0, "\ndns1 %s", IPAddress(ipAddress_struct.DNS1).toString());
+  // selectPrintf(0, "\ndns2 %s", IPAddress(ipAddress_struct.DNS2).toString());
+  // selectPrintf(0, "\nwebserverport %d", ipAddress_struct.WEBSERVERPORT);
+  // selectPrintf(0, "\nbaudrate %d", ipAddress_struct.BAUDRATE);
+  // selectPrintf(0, "\nmodbus interval %d", ipAddress_struct.Q_INTERVAL);
+  // selectPrintf(0, "\nWould you like to change IpAddress? \r\n I will be affect after reboot.(Y/n) ");
 
   // int c = clientReadTimeout(10000);
 
@@ -1291,7 +1295,7 @@ void ip_configCallback(cmd *cmdPtr)
   // }
   // else if (c == 'n' || c == -1)
   // {
-  //   selectPrintf("\r\nCanceled...");
+  //   selectPrintf("\nCanceled...");
   //   return;
   // }
   EEPROM.writeBytes(1, (const byte *)&ipAddress_struct, sizeof(nvsSystemSet));
@@ -1321,19 +1325,19 @@ void ip_configCallback(cmd *cmdPtr)
   doc_tx["interval"] = ipAddress_struct.Q_INTERVAL;
   doc_tx["ver"] = version;
 
-  selectPrintf(0, "\r\nSucceed.. You can use reboot command\r\n");
+  selectPrintf(0, "\nSucceed.. You can use reboot command\r\n");
 }
 void date_configCallback(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);
-  selectPrintf(0, " command done\r\n");
+  selectPrintf(0, "\ncommand done");
 }
 void df_configCallback(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);
-  selectPrintf(0, "\r\nESP32 Partition table:\r\n");
-  selectPrintf(0, "| Type | Sub |  Offset  |   Size   |       Label      |\r\n");
-  selectPrintf(0, "| ---- | --- | -------- | -------- | ---------------- |\r\n");
+  selectPrintf(0, "\nESP32 Partition table:\n");
+  selectPrintf(0, "| Type | Sub |  Offset  |   Size   |       Label      |\n");
+  selectPrintf(0, "| ---- | --- | -------- | -------- | ---------------- |\n");
 
   esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
   if (pi != NULL)
@@ -1341,18 +1345,18 @@ void df_configCallback(cmd *cmdPtr)
     do
     {
       const esp_partition_t *p = esp_partition_get(pi);
-      selectPrintf(0, "|  %02x  | %02x  | 0x%06X | 0x%06X | %-16s |\r\n",
+      selectPrintf(0, "|  %02x  | %02x  | 0x%06X | 0x%06X | %-16s |\n",
                    p->type, p->subtype, p->address, p->size, p->label);
     } while (pi = (esp_partition_next(pi)));
   }
-  selectPrintf(0, "\r\n|  HEAP   |       |          |   %d | ESP.getHeapSize |\r\n", ESP.getHeapSize());
-  selectPrintf(0, "|Free heap|       |          |   %d | ESP.getFreeHeap |\r\n", ESP.getFreeHeap());
-  selectPrintf(0, "|Psram    |       |          |   %d | ESP.PsramSize   |\r\n", ESP.getPsramSize());
-  selectPrintf(0, "|Free Psrm|       |          |   %d | ESP.FreePsram   |\r\n", ESP.getFreePsram());
-  selectPrintf(0, "|UsedPsram|       |          |   %d | Psram - FreeRam |\r\n", ESP.getPsramSize() - ESP.getFreePsram());
-  selectPrintf(0, "|SNMP Threed heap free     |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxSnmp));
-  selectPrintf(0, "|h_pxNaradaV13 Threed heap free |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxNaradaV13));
-  selectPrintf(0, "|Telnet Threed heap free     |   %d | Psram - FreeRam |\r\n", uxTaskGetStackHighWaterMark(h_pxTelnetTask));
+  selectPrintf(0, "\n|  HEAP   |       |          |   %d | ESP.getHeapSize |\n", ESP.getHeapSize());
+  selectPrintf(0, "|Free heap|       |          |   %d | ESP.getFreeHeap |\n", ESP.getFreeHeap());
+  selectPrintf(0, "|Psram    |       |          |   %d | ESP.PsramSize   |\n", ESP.getPsramSize());
+  selectPrintf(0, "|Free Psrm|       |          |   %d | ESP.FreePsram   |\n", ESP.getFreePsram());
+  selectPrintf(0, "|UsedPsram|       |          |   %d | Psram - FreeRam |\n", ESP.getPsramSize() - ESP.getFreePsram());
+  selectPrintf(0, "|SNMP Threed heap free     |   %d | Psram - FreeRam |\n", uxTaskGetStackHighWaterMark(h_pxSnmp));
+  selectPrintf(0, "|h_pxNaradaV13 Threed heap free |   %d | Psram - FreeRam |\n", uxTaskGetStackHighWaterMark(h_pxNaradaV13));
+  selectPrintf(0, "|Telnet Threed heap free     |   %d | Psram - FreeRam |\n", uxTaskGetStackHighWaterMark(h_pxTelnetTask));
 }
 
 void errorCallback(cmd_error *errorPtr)
@@ -1434,7 +1438,7 @@ void setIpaddressToEthernet()
   // FILE *fp = fopen("/spiffs/ipaddress.txt", "r");
   // if (fp)
   // { // 존재하면....
-  //   printf("\r\nIpaddress.txt file exist");
+  //   printf("\nIpaddress.txt file exist");
   //   char *line;
   //   size_t len = 0;
   //   ssize_t readLength;
@@ -1443,43 +1447,43 @@ void setIpaddressToEthernet()
   //   {
   //     if (ipaddress.fromString(line) == false)
   //     {
-  //       printf("\r\nWrong Ip %s", line);
+  //       printf("\nWrong Ip %s", line);
   //       return;
   //     }
-  //     printf("\r\nIpaddress %s", ipaddress.toString().c_str());
+  //     printf("\nIpaddress %s", ipaddress.toString().c_str());
   //   }
   //   readLength = __getline(&line, &len, fp);
   //   if (readLength)
   //   {
   //     if (gateway.fromString(line) == false)
   //     {
-  //       printf("\r\nWrong Gateway %s", line);
+  //       printf("\nWrong Gateway %s", line);
   //       return;
   //     }
-  //     printf("\r\nGateway %s", gateway.toString().c_str());
+  //     printf("\nGateway %s", gateway.toString().c_str());
   //   }
   //   readLength = __getline(&line, &len, fp);
   //   if (readLength)
   //   {
   //     if (subnetmask.fromString(line) == false)
   //     {
-  //       printf("\r\nWrong subnet mask %s", line);
+  //       printf("\nWrong subnet mask %s", line);
   //       return;
   //     }
-  //     printf("\r\nsubnet mask %s", subnetmask.toString().c_str());
+  //     printf("\nsubnet mask %s", subnetmask.toString().c_str());
   //   }
 
   //   fclose(fp);
   // }
   // else
   // {
-  //   printf("\r\nipaddress.txt file not found. Use default Ipaddress");
+  //   printf("\nipaddress.txt file not found. Use default Ipaddress");
   // }
   // fclose(fp);
   // if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
-  //   printf("Eth config failed...\r\n");
+  //   printf("Eth config failed...\n");
   // else
-  //   printf("Eth config succeed...\r\n");
+  //   printf("Eth config succeed...\n");
 }
 int EthLan8720Start()
 {
@@ -1488,10 +1492,10 @@ int EthLan8720Start()
   int retrycount = 0;
 
   if (ETH.config(ipaddress, gateway, subnetmask, dns1, dns2) == false)
-    Serial.printf("Eth config failed...\r\n");
+    Serial.printf("Eth config failed...\n");
   else
-    Serial.printf("Eth config succeed...\r\n");
-  Serial.printf("\r\nconnecting");
+    Serial.printf("Eth config succeed...\n");
+  Serial.printf("connecting\n");
   while (!ETH.linkUp())
   {
     Serial.printf(".");
@@ -1501,12 +1505,13 @@ int EthLan8720Start()
       return -1;
     }
   }
-  Serial.printf("\r\nConnected\r\n");
+  Serial.printf("\n");
+  Serial.printf("Connected\n");
   telnetServer.begin();
   // server.setNoDelay(true);
-  printf("\r\nReady! Use 'telnet ");
+  printf("\nReady! Use 'telnet\n");
   printf(ETH.localIP().toString().c_str());
-  printf(" 23' to connect");
+  printf(" 23' to connect\n");
   return 0;
 }
 void littleFsInit(int bformat)
@@ -1526,40 +1531,40 @@ void littleFsInit(int bformat)
   {
     if (ret == ESP_FAIL)
     {
-      printf("Failed to mount or format filesystem\r\n");
+      printf("Failed to mount or format filesystem\n");
     }
     else if (ret == ESP_ERR_NOT_FOUND)
     {
-      printf("Failed to find SPIFFS partition\r\n");
+      printf("Failed to find SPIFFS partition\n");
     }
     else
     {
-      printf("Failed to initialize SPIFFS (%s)\r\n", esp_err_to_name(ret));
+      printf("Failed to initialize SPIFFS (%s)\n", esp_err_to_name(ret));
     }
     return;
   }
-  printf("\r\nPerforming SPIFFS_check().");
+  printf("\nPerforming SPIFFS_check().");
   ret = esp_spiffs_check(conf.partition_label);
   if (ret != ESP_OK)
   {
-    printf("\r\nSPIFFS_check() failed (%s)", esp_err_to_name(ret));
+    printf("\nSPIFFS_check() failed (%s)", esp_err_to_name(ret));
     return;
   }
   else
   {
-    printf("\r\nSPIFFS_check() successful");
+    printf("\nSPIFFS_check() successful");
   }
   size_t total = 0, used = 0;
   ret = esp_spiffs_info(conf.partition_label, &total, &used);
   if (ret != ESP_OK)
   {
-    printf("\r\nFailed to get SPIFFS partition information (%s). Formatting...", esp_err_to_name(ret));
+    printf("\nFailed to get SPIFFS partition information (%s). Formatting...", esp_err_to_name(ret));
     esp_spiffs_format(conf.partition_label);
     return;
   }
   else
   {
-    printf("\r\nPartition size: total: %d, used: %d", total, used);
+    printf("\nPartition size: total: %d, used: %d", total, used);
   }
 }
 
@@ -1580,12 +1585,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   switch (type)
   {
   case WStype_DISCONNECTED:
-    ESP_LOGI(TAG, "[%u] Disconnected!\r\n", num);
+    ESP_LOGI(TAG, "[%u] Disconnected!\n", num);
     break;
   case WStype_CONNECTED:
   {
     IPAddress ip = webSocket.remoteIP(num);
-    selectPrintf(0,"[%u] Connected from %d.%d.%d.%d url: %s\r\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+    selectPrintf(0,"[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
 
     // send message to client
     // object = doc_tx.to<JsonObject>();
@@ -1602,7 +1607,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     if (de_err)
     {
       printf("");
-      selectPrintf(0, "requset Type is not JSON Type \r\n");
+      selectPrintf(0, "requset Type is not JSON Type \n");
       break;
     }
     else
@@ -1649,18 +1654,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
       {
         doc_tx.clear();
 
-        selectPrintf(0, "requset Type is %s\r\n", req_type);
+        selectPrintf(0, "requset Type is %s\n", req_type);
         webRequestNo = 1;
+        whereRequest = FromWeb;
         cli.parse(req_type);
         sendString = "";
         serializeJson(doc_tx, sendString);
-        // selectPrintf(0,"%s\r\n", sendString);
+        // selectPrintf(0,"%s\n", sendString);
         webSocket.sendTXT(num, sendString);
       }
     }
     break;
   case WStype_BIN:
-    printf("[%u] get binary length: %u\r\n", num, length);
+    printf("[%u] get binary length: %u\n", num, length);
 
     break;
   case WStype_ERROR:
@@ -1699,10 +1705,12 @@ void readInputFromTelnetClient()
     // if( isUserLogin && isUserPasswd )
     // if (isUserLogin)
     {
+
+      whereRequest = FromTelnet;
       cli.parse(input);
       Client.readBytes(readBuf, 1);
       input = "";
-      selectPrintf(0, "\r\n#");
+      selectPrintf(0, "\n#");
     }
   }
 }
@@ -1768,15 +1776,15 @@ void httpServerOnset()
         {
           fwrite((char *)upload.buf, upload.currentSize, 1, fUpdate);
           UpdateSize += upload.currentSize;
-          selectPrintf(0, "%d\r\n", upload.currentSize);
+          selectPrintf(0, "%d\n", upload.currentSize);
         }
         else if (upload.status == UPLOAD_FILE_END)
         {
           fclose(fUpdate);
-          selectPrintf(0, "Upload END....File name : %s\r\n", upload.filename.c_str());
-          selectPrintf(0, "name : %s\r\n", upload.name.c_str());
-          selectPrintf(0, "type: %s\r\n", upload.type.c_str());
-          selectPrintf(0, "size: %d\r\n", upload.totalSize);
+          selectPrintf(0, "Upload END....File name : %s\n", upload.filename.c_str());
+          selectPrintf(0, "name : %s\n", upload.name.c_str());
+          selectPrintf(0, "type: %s\n", upload.type.c_str());
+          selectPrintf(0, "size: %d\n", upload.totalSize);
           // Update.end(false);
         }
       });
@@ -1791,7 +1799,7 @@ void httpServerOnset()
         HTTPUpload &upload = webServer.upload();
         if (upload.status == UPLOAD_FILE_START)
         {
-          printf("Update: %s\r\n", upload.filename.c_str());
+          printf("Update: %s\n", upload.filename.c_str());
           if (!Update.begin(UPDATE_SIZE_UNKNOWN))
           { // start with max available size
             Update.printError(USE_SERIAL);
@@ -2147,11 +2155,11 @@ void readInputSerial()
     }
     if (readBuf[0] == '\n' || readBuf[0] == '\r')
     {
+
+      whereRequest = FromSerial;
       cli.parse(input);
       Serial.readBytes(readBuf, 1);
       input = "";
-      //Serial.printf("\n# ");
-      // break;
     }
   }
 }
@@ -2236,7 +2244,7 @@ void setup()
   Serial.begin(BAUDRATEDEF);
   pinMode(OP_LED,OUTPUT);
   digitalWrite(OP_LED, 0); // receive mode
-  Serial.printf("\r\nUsing 485 for Battery communication");
+  //Serial.printf("Using 485 for Battery communication\r\n");
   Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN); // for 485
   // while (1)
   // {
@@ -2256,7 +2264,7 @@ void setup()
 
   String macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
-  Serial.printf("\r\nUsing Bluetooth communication with IFTECH_%s",macAddress);
+  //Serial.printf("Using Bluetooth communication with IFTECH_%s\r\n",macAddress);
   //Serial.begin("IFTECH_" + macAddress);
   // callback = onBTConnect;
   // Serial.register_callback(&callback);
@@ -2272,15 +2280,18 @@ void setup()
   //   printf("\r\nFailed to create queue= %p\n", h_queue);
   // }
 
-  Serial.printf("\r\nlittleFsInit");
+  Serial.printf("littleFsInit\n");
   littleFsInit(0);
-  Serial.printf("\r\nreadnWriteEEProm");
+  Serial.printf("readnWriteEEProm\n");
   readnWriteEEProm();
 
-  Serial.printf("\r\nEthLan8720Start");
+  Serial.printf("ipaddress:%s \n", IPAddress(ipAddress_struct.IPADDRESS).toString().c_str());
+  Serial.printf("gateway:%s \n", IPAddress(ipAddress_struct.GATEWAY).toString().c_str());
+  Serial.printf("subnetmask:%s \n", IPAddress(ipAddress_struct.SUBNETMASK).toString().c_str());
+  Serial.printf("EthLan8720Start\n");
   if (EthLan8720Start())
   {
-    Serial.printf("\r\nConnection Failed...!");
+    Serial.printf("ETH CONN FAIL!\n");
     // Serial.printf("\r\nWiFi.softAPConfig");
     // WiFi.softAPConfig(IPAddress(192, 168, 11, 1), IPAddress(192, 168, 11, 1), IPAddress(255, 255, 255, 0));
     // Serial.printf("\r\nWiFi.mode(WIFI_MODE_AP)");
@@ -2291,9 +2302,9 @@ void setup()
   }
   else
   {
-    Serial.printf("\r\nEthernet connection succeed");
+    Serial.printf("ETH CONN SUCCEED!\n");
   }
-  printf("\r\nWebServer Begin");
+  printf("WebServer Begin\n");
   httpServerOnset();
   webServer.begin();
   webSocket.begin();
@@ -2306,6 +2317,7 @@ void setup()
   xTaskCreate(h_pxNaradaV13Request, "h_pxNaradaV13", 10240, NULL, 1, h_pxNaradaV13);
   xTaskCreate(telnetTask, "telnetTask", 5000, NULL, 1, h_pxTelnetTask);
 
+  whereRequest = FromSerial;
   cli.parse("user");
   delay(100);
   esp_task_wdt_init(WDT_TIMEOUT, true);

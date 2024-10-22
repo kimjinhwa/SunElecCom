@@ -350,12 +350,9 @@ void h_pxNaradaV13Request(void *parameter)
         if ((now - previousmills > everyTwoInterval))
         {
 
-            //Serial.printf("\nDead Module %d is request %ld", packNumber, millis());
             naradaClient485.getPackData(packNumber);
             // 응답시간은 약 30ms이다.
-            //Serial.printf("\nData received %ld timeout %d\n", millis(), timeOut);
             ValidData = readSerial2Data();
-            //Serial.printf("\nData received %d byte %ld time valid %d\n",readSerialCount, millis(), ValidData);
             // 약 100ms소요됨
             if (ValidData == 1)
             {
@@ -371,7 +368,6 @@ void h_pxNaradaV13Request(void *parameter)
                 // 이것이 0 이면 요청에 대한 응답이 오지 않았다는 것이다.
                 // 즉 모듈이 죽었을 수 있으므로 해당 데이타에 대한 오류를 보내준다.
                 // revData에는 이미 어떤 형태이든 데이타가 있다.
-                // Serial.printf("\nDead Module is %d %d %ld\n", packNumber, readSerialCount, millis());
                 readSerialCount = 92;
                 naradaProtocol = (naradav13Protocol *)&revData;
                 for (int i = 0; i < 15; i++)
@@ -384,7 +380,6 @@ void h_pxNaradaV13Request(void *parameter)
                 naradaProtocol->packNumber = packNumber;
                 revData[0] = 0x7D;
                 // revData[1] = packNumber;
-                // Serial.printf("\nDead Module is %d %d %ld 0x%x\n", packNumber, readSerialCount, millis(),naradaProtocol->startByte);
                 naradaProtocol->CRC = naradaClient485.checksum(revData, 4 + revData[3]);
                 if (dataRequest)
                 {
@@ -403,32 +398,6 @@ void h_pxNaradaV13Request(void *parameter)
     }
 }
 // // 함수를 이용하여 숫자로 변환하는 유틸리티 함수
-// float extractFloatValue(const String &str)
-// {
-//     return str.toFloat();
-// }
-
-
-// int extractIntValue(const String &str)
-// {
-//     return str.toInt();
-// }
-// char cr = 0x0d;
-
-
-// void selectPrintf(uint sel, const char *format, ...);
-
-// extern char *kepChargeMode;
-
-// void setKepSnmpValue()
-// {
-// }
-
-    //printf("\nChecksum is %2x , %02x",revData[4+revData[3]],checksum(revData,4+revData[3]));
-    // while(readSerialCount < revData.dataLength-1){
-    //     readSerialCount += dataParse();
-    //}
-
 
 // 데이타 길이는 +1 을 해 주어야 한다( 0D 때문에)
 //  7E 01 01 56 
@@ -450,64 +419,4 @@ void h_pxNaradaV13Request(void *parameter)
 //  7E 01 01 56 01 0F 0C FA 0C FA 0C FA 0C F8 0C F6 0C FA 0C FA 0C F8 0C F9 0C F9 0C FA 0C F9 0C F8 0C FA 0C FC 02 01 75 30 03 01 1D 4C 04 01 27 28 05 06 00 44 00 44 00 44 00 44 40 47 20 46 06 05 00 00 10 00 00 00 00 00 00 00 07 01 00 01 08 01 13 75 09 01 27 10 0A 01 40 00 4E 0D 
 //  7E 01 01 56 01 0F 0C FA 0C FA 
 //  0C FA 0C F8 0C F6 0C FA 0C FA 0C F8 0C F9 0C F9 0C FA 0C F9 0C F8 0C FA 0C FC 02 01 75 30 03 01 1D 4C 04 01 27 28 05 06 00 44 00 44 00 44 00 44 40 47 20 46 06 05 00 00 10 00 00 00 00 00 00 00 07 01 00 01 08 01 13 75 09 01 27 10 0A 01 40 00 4E 0D 
-// typedef struct {
-//    byte Head; 
-//    byte address; 
-//    byte CID; 
-//    byte dataLength; 
-// }naradav13_headingData_t;
-// naradav13_headingData_t revData;
-    //digitalWrite(OP_LED, 0); // Receive mode
-    //처음 데이타를 기다린다.j
-    // while(!Serial2.available()){
-    //     loopCount++;
-    //     vTaskDelay(10);
-    //     if(loopCount >= timeOut){
-    //         return TIMEOUT;
-    //     } 
-    // }
-    // int c=0x00;
-    // loopCount = 0;
-
-    // int start =0;
-    // while (Serial2.available())
-    // {
-    //     c = Serial2.read();
-    //     if (c == 0x7e) start = 1;
-    //     if (start)
-    //     {
-    //         revData[readSerialCount] = c;
-    //         readSerialCount++;
-    //         while (!Serial2.available())
-    //         {
-    //             loopCount++;
-    //             vTaskDelay(5);
-    //             if (loopCount >= 4)
-    //             {
-    //                 loopCount = 0;
-    //                 break;
-    //             }
-    //         }
-    //         if (readSerialCount > 254)
-    //             break;
-    //     }
-    // };
-    // readSerialCount =  Serial2.readBytes(revData,4);
-    // if(readSerialCount<4) return TIMEOUT;
-    // readSerialCount +=  Serial2.readBytes(&revData[4],revData[3]+2);// 마지막  checksum Flag 0x0D
-    // for(int i=0;i<readSerialCount;i++)
-    //     Serial.printf(" %02x",revData[i]);
-    // Serial.printf("\nRead count is %d",readSerialCount);
-
-    // while(Serial2.available() ) Serial2.read();
-    
-    // return SUCCESS;
-
-    // if(readSerialCount < (revData[3]+4) ) return TIMEOUT;
-    //명령어 4개 + data 0x56(86) + checksum + endflag = 92
-    // Serial.printf("\npacknumber %d\n",packNumber);
-    // for(int j=0;j<15;j++)Serial.printf(" %d", batInfo[packNumber].voltage[j]);
-    // Serial.println();
-    // Serial.println();
-    // for(int i = 0;i < index ; i++) Serial.printf(" %02x",sendData[i]);
-    // Serial.println();
+ 
