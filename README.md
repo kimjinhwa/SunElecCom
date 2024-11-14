@@ -2,6 +2,13 @@
 ```
 C:\Users\ServerManager\.platformio\penv\Scripts\platformio.exe run --target upload --environment SNMP-RELEASE
 ```
+# init를 해야 할것 같다. 
+# 결선도
+- Display P4   
+  * io18 <-->  10
+  * io17 <-->   9
+  * 3.3v <-->   2
+  * gnd  <-->   4
 
 썬일렉콤에 납품될 리튬 축전지 48V 모듈 8개의 병렬연결에 사용될 프로그램이다. 
 - telnet debug monitering이 가능하다. 
@@ -18,13 +25,13 @@ C:\Users\ServerManager\.platformio\penv\Scripts\platformio.exe run --target uplo
 1. 60초마다 커넥션은 다시 해야 한다. 
 2. 최대 동시사용은 4이다.
 
-1. include https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js file into code.  
+3. include https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js file into code.  
    not anymore upload into esp32 flash memory.
-2. Upload html list.
+4. Upload html list.
 - index.html
 -
 
-3. For Debugging
+1. For Debugging
 - Megatec장비와 통신하는 데이타를 볼 수 있다
 
 - nc -ul -p 162 or
